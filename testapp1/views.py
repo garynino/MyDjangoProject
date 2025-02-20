@@ -3,12 +3,12 @@
 
 from django.http import HttpResponse
 
-import html
-import re
-
 from testapp1.models import *
 
 import xml.etree.ElementTree as ET
+import html
+import re
+
 from django.http import JsonResponse
 
 def hello_world(request):
@@ -118,13 +118,7 @@ def parse_qti_xml(request):
                     #z
                 )
 
-
-
-
-
-
-
-        return JsonResponse({"message": f"Created new test with ID {test_instance.id} and test_number: {temp3}"})
+        return JsonResponse({"message": "Created new record"})
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
