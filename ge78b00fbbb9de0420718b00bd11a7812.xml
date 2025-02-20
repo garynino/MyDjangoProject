@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questestinterop xmlns="http://www.imsglobal.org/xsd/ims_qtiasiv1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/ims_qtiasiv1p2 http://www.imsglobal.org/xsd/ims_qtiasiv1p2p1.xsd">
+  <assessment ident="ge78b00fbbb9de0420718b00bd11a7812" title="Chapter 4 Reading Quiz">
+    <qtimetadata>
+      <qtimetadatafield>
+        <fieldlabel>qmd_timelimit</fieldlabel>
+        <fieldentry>30</fieldentry>
+      </qtimetadatafield>
+      <qtimetadatafield>
+        <fieldlabel>cc_maxattempts</fieldlabel>
+        <fieldentry>1</fieldentry>
+      </qtimetadatafield>
+    </qtimetadata>
+    <section ident="root_section">
+      <item ident="gc022b7e1efbaf5c78d7b6e1425233ae4" title="An example of a righ">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>43717,90075,59564,46539</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>g2a5e80b32e286d0e3cdb42990098a6bc</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;An example of a right explicitly protected by the Constitution as drafted at the Constitutional Convention is the ________.&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="43717">
+                <material>
+                  <mattext texttype="text/plain">right to free speech</mattext>
+                </material>
+              </response_label>
+              <response_label ident="90075">
+                <material>
+                  <mattext texttype="text/plain">right to keep and bear arms</mattext>
+                </material>
+              </response_label>
+              <response_label ident="59564">
+                <material>
+                  <mattext texttype="text/plain">right to a writ of habeas corpus</mattext>
+                </material>
+              </response_label>
+              <response_label ident="46539">
+                <material>
+                  <mattext texttype="text/plain">right not to be subjected to cruel and unusual punishment</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">59564</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="g9762b16c530b82a6c4449137d9d78048" title="The Bill of Rights w">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>40334,17381,96117,35187</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>gcb87ecd262cb5ae1fb61addbb14cdff6</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;The Bill of Rights was added to the Constitution because ________.&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="40334">
+                <material>
+                  <mattext texttype="text/plain">key states refused to ratify the Constitution unless it was added</mattext>
+                </material>
+              </response_label>
+              <response_label ident="17381">
+                <material>
+                  <mattext texttype="text/plain">Alexander Hamilton believed it was necessary</mattext>
+                </material>
+              </response_label>
+              <response_label ident="96117">
+                <material>
+                  <mattext texttype="text/plain">it was part of the Articles of Confederation</mattext>
+                </material>
+              </response_label>
+              <response_label ident="35187">
+                <material>
+                  <mattext texttype="text/plain">it was originally part of the Declaration of Independence</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">40334</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="g66ec83787ee3bc89efecae030ae0afc7" title="The double jeopardy">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>46655,14159,22843,99297</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>g309b7db69d68ce79cd939711124833fa</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;The double jeopardy rule in the Bill of Rights forbids which of the following?&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="46655">
+                <material>
+                  <mattext texttype="text/plain">prosecuting someone in a state court for a criminal act they had been acquitted of in federal court</mattext>
+                </material>
+              </response_label>
+              <response_label ident="14159">
+                <material>
+                  <mattext texttype="text/plain">prosecuting someone in federal court for a criminal act they had been acquitted of in a state court</mattext>
+                </material>
+              </response_label>
+              <response_label ident="22843">
+                <material>
+                  <mattext texttype="text/plain">suing someone for damages for an act the person was found not guilty of</mattext>
+                </material>
+              </response_label>
+              <response_label ident="99297">
+                <material>
+                  <mattext texttype="text/plain">none of these options</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">99297</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="g140d3cb22651a039e13932e1560438e0" title="The Fourteenth Amend">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>31390,15801,96581,23645</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>gff907022f372bc9eb0913f12f0e5b31d</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;The Fourteenth Amendment was critically important for civil liberties because it ________.&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="31390">
+                <material>
+                  <mattext texttype="text/plain">guaranteed freed men the right to vote</mattext>
+                </material>
+              </response_label>
+              <response_label ident="15801">
+                <material>
+                  <mattext texttype="text/plain">outlawed slavery</mattext>
+                </material>
+              </response_label>
+              <response_label ident="96581">
+                <material>
+                  <mattext texttype="text/plain">helped start the process of selective incorporation of the Bill of Rights</mattext>
+                </material>
+              </response_label>
+              <response_label ident="23645">
+                <material>
+                  <mattext texttype="text/plain">allowed the states to continue to enact Black codes</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">96581</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="g3915656f9678eb6cc18a5f727d0f2b4f" title="The Fourth Amendment">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>30644,55083,18205,27853</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>g33d3badfa27cc1a6e7441a53ebfa3069</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;The Fourth Amendmentâ€™s requirement for a warrant ________.&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="30644">
+                <material>
+                  <mattext texttype="text/plain">applies only to searches of the home</mattext>
+                </material>
+              </response_label>
+              <response_label ident="55083">
+                <material>
+                  <mattext texttype="text/plain">applies only to the seizure of property as evidence</mattext>
+                </material>
+              </response_label>
+              <response_label ident="18205">
+                <material>
+                  <mattext texttype="text/plain">does not protect people who rent or lease property</mattext>
+                </material>
+              </response_label>
+              <response_label ident="27853">
+                <material>
+                  <mattext texttype="text/plain">does not apply when there is a serious risk that evidence will be destroyed before a warrant can be issued</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">27853</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="gedeaa662a814485845791cda13029157" title="The Supreme Court ca">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>2356,76209,8716,80844</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>g7de48c5b8f8dc31f64a9f3993475a3a4</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;The Supreme Court case known as Kelo v. City of New London was controversial because it ________.&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="2356">
+                <material>
+                  <mattext texttype="text/plain">allowed greater use of the power of eminent domain</mattext>
+                </material>
+              </response_label>
+              <response_label ident="76209">
+                <material>
+                  <mattext texttype="text/plain">regulated popular ride-sharing services like Lyft and Uber</mattext>
+                </material>
+              </response_label>
+              <response_label ident="8716">
+                <material>
+                  <mattext texttype="text/plain">limited the application of the death penalty</mattext>
+                </material>
+              </response_label>
+              <response_label ident="80844">
+                <material>
+                  <mattext texttype="text/plain">made it harder for police to use evidence obtained without a warrant</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">2356</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="gc4a5705ffca2a98b04781b4e43f6b25d" title="The Supreme Court ha">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>19791,20790,20628,39630</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>gc8e52ef5cf0e7163e09fa620f49e9e50</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;The Supreme Court has decided that the death penalty ________.&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="19791">
+                <material>
+                  <mattext texttype="text/plain">is always cruel and unusual punishment</mattext>
+                </material>
+              </response_label>
+              <response_label ident="20790">
+                <material>
+                  <mattext texttype="text/plain">is never cruel and unusual punishment</mattext>
+                </material>
+              </response_label>
+              <response_label ident="20628">
+                <material>
+                  <mattext texttype="text/plain">may be applied only to acts of terrorism</mattext>
+                </material>
+              </response_label>
+              <response_label ident="39630">
+                <material>
+                  <mattext texttype="text/plain">may not be applied to those who were under 18 when they committed a crime</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">39630</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="g6eedaa5fab536ff01cab05d6bf10f127" title="Which of the followi">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>79717,29317,18141,58957</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>g6b7f01c087eca4df375a3eafc61c5839</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;Which of the following provisions is not part of the First Amendment?&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="79717">
+                <material>
+                  <mattext texttype="text/plain">the right to keep and bear arms</mattext>
+                </material>
+              </response_label>
+              <response_label ident="29317">
+                <material>
+                  <mattext texttype="text/plain">the right to peaceably assemble</mattext>
+                </material>
+              </response_label>
+              <response_label ident="18141">
+                <material>
+                  <mattext texttype="text/plain">the right to free speech</mattext>
+                </material>
+              </response_label>
+              <response_label ident="58957">
+                <material>
+                  <mattext texttype="text/plain">the protection of freedom of religion</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">79717</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="g53fef8750a48d49c9f4714442280c671" title="Which of the followi 2">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>47525,94030,69725,69495</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>g7214ffdc481f53d7fe285970dbb9dad5</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;Which of the following rights is not protected by the Sixth Amendment?&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="47525">
+                <material>
+                  <mattext texttype="text/plain">the right to trial by an impartial jury</mattext>
+                </material>
+              </response_label>
+              <response_label ident="94030">
+                <material>
+                  <mattext texttype="text/plain">the right to cross-examine witnesses in a trial</mattext>
+                </material>
+              </response_label>
+              <response_label ident="69725">
+                <material>
+                  <mattext texttype="text/plain">the right to remain silent</mattext>
+                </material>
+              </response_label>
+              <response_label ident="69495">
+                <material>
+                  <mattext texttype="text/plain">the right to a speedy trial</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">69725</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+      <item ident="gb2a43160c3130dcce49f963bf0cbb0a9" title="Which of the followi 4">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>10.0</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>original_answer_ids</fieldlabel>
+              <fieldentry>57403,61706,72190,85308</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>assessment_question_identifierref</fieldlabel>
+              <fieldentry>gb91d345a2af1e27a8571418efd33c69f</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material>
+            <mattext texttype="text/html">&lt;div&gt;In which Supreme Court case did the court explicitly recognize the right to privacy?&amp;nbsp;&lt;/div&gt;</mattext>
+          </material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+              <response_label ident="57403">
+                <material>
+                  <mattext texttype="text/plain">Marbury v. Madison</mattext>
+                </material>
+              </response_label>
+              <response_label ident="61706">
+                <material>
+                  <mattext texttype="text/plain">Dobbs v. Jackson</mattext>
+                </material>
+              </response_label>
+              <response_label ident="72190">
+                <material>
+                  <mattext texttype="text/plain">Griswold v. Connecticut</mattext>
+                </material>
+              </response_label>
+              <response_label ident="85308">
+                <material>
+                  <mattext texttype="text/plain">Texas v. Johnson</mattext>
+                </material>
+              </response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+          </outcomes>
+          <respcondition continue="No">
+            <conditionvar>
+              <varequal respident="response1">72190</varequal>
+            </conditionvar>
+            <setvar action="Set" varname="SCORE">100</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+    </section>
+  </assessment>
+</questestinterop>

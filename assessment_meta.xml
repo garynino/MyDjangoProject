@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz identifier="ge78b00fbbb9de0420718b00bd11a7812" xmlns="http://canvas.instructure.com/xsd/cccv1p0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://canvas.instructure.com/xsd/cccv1p0 https://canvas.instructure.com/xsd/cccv1p0.xsd">
+  <title>Chapter 4 Reading Quiz</title>
+  <description>&lt;p&gt;&lt;strong&gt;Instructions:&amp;nbsp;&lt;/strong&gt;&lt;span&gt;The following quiz will cover chapter four. It will consist of ten &lt;/span&gt;&lt;em&gt;&lt;strong&gt;multiple choice questions and each question is worth ten points. &lt;/strong&gt;&lt;/em&gt;&lt;span&gt;It will be&amp;nbsp;&lt;/span&gt;&lt;em&gt;&lt;strong&gt;essential to read chapter four&lt;/strong&gt;&lt;/em&gt;&lt;span&gt;&amp;nbsp;before taking this quiz. You will&amp;nbsp;&lt;/span&gt;&lt;em&gt;have half an hour to complete this short quiz.&lt;span&gt;&amp;nbsp;&lt;/span&gt;&lt;span&gt;&lt;strong&gt;Please be sure to read the chapter before taking the quiz.&amp;nbsp;&lt;/strong&gt;&lt;/span&gt;&lt;/em&gt;&lt;span&gt;&lt;strong&gt;Good luck!&amp;nbsp;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Objectives&lt;/strong&gt;&lt;span&gt;: This quiz is designed to measure the following outcomes:&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;ul&gt;
+&lt;li&gt;CO 7:&amp;nbsp;&lt;span class="tx"&gt;Describe the rights and responsibilities of citizens&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span class="textLayer--absolute"&gt;CO 8: Analyze issues and policies in U.S. politics.&lt;br&gt;&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;4.1 Differentiate between civil liberties and civil rights&lt;/li&gt;
+&lt;li&gt;4.1 Identify the origin of civil liberties in the U.S. context&lt;/li&gt;
+&lt;li&gt;4.1 Identify the key positions on civil liberties taken at the Constitutional Convention&lt;br&gt;&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;4.2 Identify the liberties and rights guaranteed by the first four amendments to the Constitution&lt;br&gt;&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;4.3 Identify the rights of those suspected or accused of criminal activity&lt;/li&gt;
+&lt;li&gt;4.3 Identify how Supreme Court decisions transformed the rights of the accused&lt;/li&gt;
+&lt;li&gt;4.3 Recall why the Eighth Amendment is controversial regarding capital punishment&lt;br&gt;&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;4.4 Identify how the Ninth and Tenth Amendments reflect on our other rights&lt;/li&gt;
+&lt;li&gt;4.4 Identify the two senses of the “right to privacy” embodied in the Constitution&lt;/li&gt;
+&lt;li&gt;4.4 Recall the controversy over privacy when applied to abortion and same-sex relationships&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/ul&gt;</description>
+  <shuffle_answers>false</shuffle_answers>
+  <scoring_policy>keep_highest</scoring_policy>
+  <hide_results>always</hide_results>
+  <quiz_type>assignment</quiz_type>
+  <points_possible>100.0</points_possible>
+  <require_lockdown_browser>false</require_lockdown_browser>
+  <require_lockdown_browser_for_results>false</require_lockdown_browser_for_results>
+  <require_lockdown_browser_monitor>false</require_lockdown_browser_monitor>
+  <lockdown_browser_monitor_data></lockdown_browser_monitor_data>
+  <show_correct_answers>false</show_correct_answers>
+  <anonymous_submissions>false</anonymous_submissions>
+  <could_be_locked>true</could_be_locked>
+  <time_limit>30</time_limit>
+  <disable_timer_autosubmission>false</disable_timer_autosubmission>
+  <allowed_attempts>1</allowed_attempts>
+  <one_question_at_a_time>false</one_question_at_a_time>
+  <cant_go_back>false</cant_go_back>
+  <available>false</available>
+  <one_time_results>false</one_time_results>
+  <show_correct_answers_last_attempt>false</show_correct_answers_last_attempt>
+  <only_visible_to_overrides>false</only_visible_to_overrides>
+  <module_locked>false</module_locked>
+  <assignment identifier="g57dd44fca6e60565a4fe783ca51aa47a">
+    <title>Chapter 4 Reading Quiz</title>
+    <due_at/>
+    <lock_at/>
+    <unlock_at/>
+    <module_locked>false</module_locked>
+    <workflow_state>unpublished</workflow_state>
+    <assignment_overrides>
+    </assignment_overrides>
+    <quiz_identifierref>ge78b00fbbb9de0420718b00bd11a7812</quiz_identifierref>
+    <allowed_extensions></allowed_extensions>
+    <has_group_category>false</has_group_category>
+    <points_possible>100.0</points_possible>
+    <grading_type>points</grading_type>
+    <all_day>false</all_day>
+    <submission_types>online_quiz</submission_types>
+    <position>8</position>
+    <turnitin_enabled>false</turnitin_enabled>
+    <vericite_enabled>false</vericite_enabled>
+    <peer_review_count>0</peer_review_count>
+    <peer_reviews>false</peer_reviews>
+    <automatic_peer_reviews>false</automatic_peer_reviews>
+    <anonymous_peer_reviews>false</anonymous_peer_reviews>
+    <grade_group_students_individually>false</grade_group_students_individually>
+    <freeze_on_copy>false</freeze_on_copy>
+    <omit_from_final_grade>false</omit_from_final_grade>
+    <hide_in_gradebook>false</hide_in_gradebook>
+    <intra_group_peer_reviews>false</intra_group_peer_reviews>
+    <only_visible_to_overrides>false</only_visible_to_overrides>
+    <post_to_sis>false</post_to_sis>
+    <moderated_grading>false</moderated_grading>
+    <grader_count>0</grader_count>
+    <grader_comments_visible_to_graders>true</grader_comments_visible_to_graders>
+    <anonymous_grading>false</anonymous_grading>
+    <graders_anonymous_to_graders>false</graders_anonymous_to_graders>
+    <grader_names_visible_to_final_grader>true</grader_names_visible_to_final_grader>
+    <anonymous_instructor_annotations>false</anonymous_instructor_annotations>
+    <post_policy>
+      <post_manually>false</post_manually>
+    </post_policy>
+  </assignment>
+  <assignment_group_identifierref>g06cd0b869347f652f233eafda4f867d8</assignment_group_identifierref>
+  <assignment_overrides>
+  </assignment_overrides>
+</quiz>
