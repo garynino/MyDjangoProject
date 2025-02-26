@@ -1,5 +1,5 @@
 # Create your views here.
-
+from django.shortcuts import render
 
 from django.http import HttpResponse
 
@@ -8,6 +8,11 @@ from testapp1.models import *
 import xml.etree.ElementTree as ET
 import html
 import re
+
+import os
+import zipfile
+from django.conf import settings
+from django.core.files.storage import default_storage
 
 from django.http import JsonResponse
 
@@ -26,6 +31,32 @@ def parse_qti_xml(request):
             if "}" in elem.tag:
                 elem.tag = elem.tag.split("}")[-1]
 
+    zip_file = None
+    if request.method == "POST" and request.FILES:
+        zip_file = list(request.FILES.values())[0]  # Convert files to list, then get first element
+        print("File uploaded:", zip_file.name)
+    else:
+        print("No file uploaded to website.")
+    """
+    if zip_file == None:
+        return JsonResponse({"message": "No file uploaded to website."})
+    """
+
+    #"""
+    path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
+    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+        # List all files inside the zip file
+        filename_list = zip_ref.namelist()
+
+        for file_name in filename_list:
+
+            if file_name.is_dir():
+                print(f'{file_name}')
+
+            
+            #with zip_ref.open(file_name) as file:
+            
+    #"""
     try:
 
         xml_file_path = "assessment_meta.xml"
