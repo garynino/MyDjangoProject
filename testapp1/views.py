@@ -1,4 +1,6 @@
 # Create your views here.
+from zipfile import Path
+
 from django.shortcuts import render
 
 from django.http import HttpResponse
@@ -31,35 +33,12 @@ def parse_qti_xml(request):
             if "}" in elem.tag:
                 elem.tag = elem.tag.split("}")[-1]
 
-    zip_file = None
-    if request.method == "POST" and request.FILES:
-        zip_file = list(request.FILES.values())[0]  # Convert files to list, then get first element
-        print("File uploaded:", zip_file.name)
-    else:
-        print("No file uploaded to website.")
-    """
-    if zip_file == None:
-        return JsonResponse({"message": "No file uploaded to website."})
-    """
+    def parse_just_xml(meta_path, non_meta_path):
 
-    #"""
-    path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
-    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
-        # List all files inside the zip file
-        filename_list = zip_ref.namelist()
+        print(f"processing file: {meta_path}")
 
-        for file_name in filename_list:
-
-            if file_name.is_dir():
-                print(f'{file_name}')
-
-            
-            #with zip_ref.open(file_name) as file:
-            
-    #"""
-    try:
-
-        xml_file_path = "assessment_meta.xml"
+        xml_file_path = meta_path
+        #xml_file_path = "assessment_meta.xml"
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
         remove_namespace(root)
@@ -74,9 +53,11 @@ def parse_qti_xml(request):
 
         cover_instructions_text = clean_text
 
+        print(f"processing file: {non_meta_path}")
 
         # Path to the XML file
-        xml_file_path = "ge78b00fbbb9de0420718b00bd11a7812.xml"
+        xml_file_path = non_meta_path
+        #xml_file_path = "ge78b00fbbb9de0420718b00bd11a7812.xml"
         # Load XML
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
@@ -97,7 +78,6 @@ def parse_qti_xml(request):
         temp2 = node.get("title")
         temp3 = node.get("ident")
 
-
         # Get the first available course (REMOVE AFTER TESTING)
         the_course = Course.objects.first()
 
@@ -115,27 +95,57 @@ def parse_qti_xml(request):
         for section in root.findall(".//section"):
             for item in root.findall(".//item"):
                 # Extract 'ident' attribute
-                #temp1 = item.get("ident")
+                # temp1 = item.get("ident")
 
                 qti_metadata_fields = item.findall(".//fieldentry")
 
                 node = item.find('presentation')
-                temp_node = node.find('material')
-                temp_node = node.find(".//mattext")
+                temp_node = node.find('material')       # possibly redundant statement
+                temp_node = temp_node.find(".//mattext")
 
-                question_text_field = html.unescape(temp_node.text)
+                question_text_field = temp_node.text
+                #question_text_field = html.unescape(temp_node.text)
                 # Remove <div> tags using regex
-                question_text_field = re.sub(r"</?div>", "", question_text_field)
+                #question_text_field = re.sub(r"</?div>", "", question_text_field)
 
                 # node should currently be already = element w 'presentation' tag
                 node = node.find('.//response_lid')
                 answer_choices = ""
-                for mattext in node.findall('.//mattext'):
-                    answer_choices = answer_choices + mattext.text + "; "
 
                 #
 
-                #zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+                the_question_type = qti_metadata_fields[0].text
+
+                if the_question_type == 'multiple_choice_question':
+                    for mattext in node.findall('.//mattext'):
+                        answer_choices = answer_choices + mattext.text + "; "
+                elif the_question_type == 'true_false_question':
+                    print('')
+                elif the_question_type == 'short_answer_question':
+                    print('')
+                elif the_question_type == 'fill_in_multiple_blanks_question':
+                    print('')
+                elif the_question_type == 'multiple_answers_question':
+                    print('')
+                elif the_question_type == 'multiple_dropdowns_question':
+                    print('')
+                elif the_question_type == 'matching_question':
+                    print('')
+                elif the_question_type == 'numerical_question':
+                    print('')
+                elif the_question_type == 'calculated_question':
+                    print('')
+                elif the_question_type == 'essay_question':
+                    print('')
+                elif the_question_type == 'file_upload_question':
+                    print('')
+                elif the_question_type == 'text_only_question':
+                    print('')
+
+
+                #
+
+                # zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
                 question_instance = Question.objects.create(
                     course=the_course,
@@ -146,10 +156,53 @@ def parse_qti_xml(request):
                     inbedded_graphic=None,
                     correct_answer=None,
                     correct_answer_graphic=None
-                    #z
+                    # z
                 )
 
-        return JsonResponse({"message": "Created new record"})
+    zip_file = None
+    if request.method == "POST" and request.FILES:
+        zip_file = list(request.FILES.values())[0]  # Convert files to list, then get first element
+        print("File uploaded:", zip_file.name)
+    else:
+        print("No file uploaded to website.")
+    """
+    if zip_file == None:
+        return JsonResponse({"message": "No file uploaded to website."})
+    """
 
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    #"""
+    path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
+    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+        # List all files inside the zip file
+        filename_list = zip_ref.namelist()
+
+        for file_name in filename_list:
+
+            if file_name.endswith('/'):
+
+                temp_file_list = []
+
+                for temp_filename in filename_list:
+                    if temp_filename.startswith(f'{file_name}') and (temp_filename != file_name):
+                        temp_file_list.append(temp_filename)
+
+                if temp_file_list:
+                    temp_file_list = sorted(temp_file_list)
+
+                    assessment_meta_path = temp_file_list[0]
+                    questions_file_path = temp_file_list[1]
+
+                    with zip_ref.open(assessment_meta_path) as outer_file:
+                        with zip_ref.open(questions_file_path) as inner_file:
+
+                            outer_file.seek(0)  # Reset file pointer
+                            inner_file.seek(0)
+
+                            parse_just_xml(outer_file, inner_file)
+                            #
+
+
+            
+    #"""
+
+    return JsonResponse({"NOTerror": "created Test record."}, status=555)
