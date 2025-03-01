@@ -43,15 +43,7 @@ def parse_qti_xml(request):
         root = tree.getroot()
         remove_namespace(root)
 
-        raw_html = root.find('.//description').text
-        # Remove all HTML tags using regex
-        clean_text = re.sub(r"<[^>]+>", " ", raw_html)  # Replace tags with a space
-        # Decode HTML entities (e.g., &nbsp; → " ", &amp; → "&")
-        clean_text = html.unescape(clean_text)
-        # Normalize spaces
-        clean_text = re.sub(r"\s+", " ", clean_text).strip()
-
-        cover_instructions_text = clean_text
+        cover_instructions_text = root.find('.//description').text
 
         print(f"processing file: {non_meta_path}")
 
@@ -75,8 +67,8 @@ def parse_qti_xml(request):
             return JsonResponse({"error": f"Element '{my_tag}' not found in XML!"}, status=400)
 
         # Extract 'ident' and 'title' attribute
-        temp2 = node.get("title")
-        temp3 = node.get("ident")
+        the_test_title = node.get("title")
+        test_identifier = node.get("ident")
 
         # Get the first available course (REMOVE AFTER TESTING)
         the_course = Course.objects.first()
@@ -87,13 +79,13 @@ def parse_qti_xml(request):
         # Create a new Test record
         test_instance = Test.objects.create(
             course=the_course,
-            title=f"{temp2}",
-            test_number=temp3,
+            title=the_test_title,
+            test_number=test_identifier,
             cover_instructions=cover_instructions_text
         )
 
         for section in root.findall(".//section"):
-            for item in root.findall(".//item"):
+            for item in section.findall(".//item"):        # might change to section.findall(".//item")
                 # Extract 'ident' attribute
                 # temp1 = item.get("ident")
 
@@ -104,44 +96,79 @@ def parse_qti_xml(request):
                 temp_node = temp_node.find(".//mattext")
 
                 question_text_field = temp_node.text
-                #question_text_field = html.unescape(temp_node.text)
-                # Remove <div> tags using regex
-                #question_text_field = re.sub(r"</?div>", "", question_text_field)
 
                 # node should currently be already = element w 'presentation' tag
-                node = node.find('.//response_lid')
-                answer_choices = ""
 
-                #
+                # For now, correct answer is simply a string, Probably need to change to a table later
+                correct_answer_string = None
+                answer_choices = None
 
                 the_question_type = qti_metadata_fields[0].text
+                max_points_for_question = float(qti_metadata_fields[1].text)
 
                 if the_question_type == 'multiple_choice_question':
+                    #
+                    node = node.find('.//response_lid')
+                    answer_choices = ""
                     for mattext in node.findall('.//mattext'):
                         answer_choices = answer_choices + mattext.text + "; "
+
+                    node = item.find('resprocessing')
+                    for respcondition_elem in node.findall('.//respcondition'):
+                        if respcondition_elem.get('continue') == "No":
+                            temp_node = node.find('.//varequal')
+                            correct_answer_string = temp_node.text
+
                 elif the_question_type == 'true_false_question':
-                    print('')
-                elif the_question_type == 'short_answer_question':
-                    print('')
+                    node = node.find('.//response_lid')
+                    answer_choices = ""
+                    for mattext in node.findall('.//mattext'):
+                        answer_choices = answer_choices + mattext.text + "; "
+
+                    node = item.find('resprocessing')
+                    for respcondition_elem in node.findall('.//respcondition'):
+                        if respcondition_elem.get('continue') == "No":
+                            temp_node = node.find('.//varequal')
+                            correct_answer_string = temp_node.text
+                elif the_question_type == 'short_answer_question':  # Fill-in-the-blank question
+                    answer_choices = None
+
+                    node = item.find('resprocessing')
+                    for respcondition_elem in node.findall('.//respcondition'):
+                        if respcondition_elem.get('continue') == "No":
+                            #
+                            correct_answer_string = ""
+                            for varequal_elem in respcondition_elem.findall('.//varequal'):
+                                correct_answer_string = correct_answer_string + varequal_elem.text + "; "
+
                 elif the_question_type == 'fill_in_multiple_blanks_question':
-                    print('')
+                    print('')       # this is placeholder for code to extract info from question for table
                 elif the_question_type == 'multiple_answers_question':
-                    print('')
+                    node = node.find('.//response_lid')
+                    answer_choices = ""
+                    for mattext in node.findall('.//mattext'):
+                        answer_choices = answer_choices + mattext.text + "; "
+
                 elif the_question_type == 'multiple_dropdowns_question':
-                    print('')
+                    print('')       # this is placeholder for code to extract info from question for table
                 elif the_question_type == 'matching_question':
-                    print('')
+                    print('')       # this is placeholder for code to extract info from question for table
                 elif the_question_type == 'numerical_question':
-                    print('')
+                    print('')       # this is placeholder for code to extract info from question for table
                 elif the_question_type == 'calculated_question':
-                    print('')
+                    print('')       # this is placeholder for code to extract info from question for table
                 elif the_question_type == 'essay_question':
+                    # mostly done but may need to process feedbacks or comments
+
                     print('')
                 elif the_question_type == 'file_upload_question':
+                    # should be done but may need to process feedbacks or comments
+
                     print('')
                 elif the_question_type == 'text_only_question':
-                    print('')
+                    #placeholder for any future changes, but 99.9% sure this is done
 
+                    print('')
 
                 #
 
@@ -149,12 +176,12 @@ def parse_qti_xml(request):
 
                 question_instance = Question.objects.create(
                     course=the_course,
-                    question_type=qti_metadata_fields[0].text,
+                    question_type=the_question_type,
                     question_text=question_text_field,
                     choices_for_question=answer_choices,
-                    default_points=float(qti_metadata_fields[1].text),
+                    default_points=max_points_for_question,
                     inbedded_graphic=None,
-                    correct_answer=None,
+                    correct_answer=correct_answer_string,
                     correct_answer_graphic=None
                     # z
                 )
@@ -205,4 +232,4 @@ def parse_qti_xml(request):
             
     #"""
 
-    return JsonResponse({"NOTerror": "created Test record."}, status=555)
+    return JsonResponse({"Success": "created Test record."}, status=555)
