@@ -73,6 +73,16 @@ def parse_qti_xml(request):
         # Get the first available course (REMOVE AFTER TESTING)
         the_course = Course.objects.first()
 
+        if the_course is None:
+            the_course = Course.objects.create(
+                course_code='CS123',
+                course_name='placeholder_course',
+                textbook_title='placeholder Tb title',
+                textbook_author='placeholder author',
+                textbook_isbn='placeholder isbn',
+                textbook_link='placeholder Tb link'
+            )
+
         if not the_course:
             return JsonResponse({"error": "No course found. Cannot create Test record."}, status=400)
 
@@ -103,21 +113,26 @@ def parse_qti_xml(request):
                 correct_answer_string = None
                 answer_choices = None
 
+                correct_answer_ident = None
+
                 the_question_type = qti_metadata_fields[0].text
                 max_points_for_question = float(qti_metadata_fields[1].text)
 
+                #MultiChoice & TF might be able to be combined. For now, they are separate
                 if the_question_type == 'multiple_choice_question':
                     #
                     node = node.find('.//response_lid')
-                    answer_choices = ""
-                    for mattext in node.findall('.//mattext'):
-                        answer_choices = answer_choices + mattext.text + "; "
+                    answer_choices_dict = {}
+                    for response_label_elem in node.findall('.//response_label'):
+                        response_ident = response_label_elem.get('ident')
+                        response_text = response_label_elem.find('.//mattext').text
+                        answer_choices_dict[response_ident] = response_text
 
                     node = item.find('resprocessing')
                     for respcondition_elem in node.findall('.//respcondition'):
                         if respcondition_elem.get('continue') == "No":
                             temp_node = node.find('.//varequal')
-                            correct_answer_string = temp_node.text
+                            correct_answer_ident = temp_node.text
 
                 elif the_question_type == 'true_false_question':
                     node = node.find('.//response_lid')
@@ -178,12 +193,18 @@ def parse_qti_xml(request):
                     course=the_course,
                     question_type=the_question_type,
                     question_text=question_text_field,
-                    choices_for_question=answer_choices,
+                    # choices_for_question=answer_choices,
                     default_points=max_points_for_question,
                     inbedded_graphic=None,
-                    correct_answer=correct_answer_string,
-                    correct_answer_graphic=None
+                    # correct_answer=correct_answer_string,
+                    correct_answer_graphic=None,
+                    chapter_num=None
                     # z
+                )
+
+                answeroption_instance = AnswerOption.objects.create(
+                    question=question_instance
+                    #
                 )
 
     zip_file = None
