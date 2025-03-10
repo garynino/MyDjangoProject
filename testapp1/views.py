@@ -22,6 +22,29 @@ def hello_world(request):
     return HttpResponse("Hello, world!")
 
 
+
+# View to render the upload page
+def upload_page(request):
+    return render(request, "upload.html")  # Adjust if needed
+
+# View to process the uploaded file (AJAX)
+def process_file(request):
+    if request.method == "POST" and request.FILES.get("file"):
+        uploaded_file = request.FILES["file"]
+
+        # Process the file (Example: Just reading its name and size)
+        file_info = {
+            "filename": uploaded_file.name,
+            "size": uploaded_file.size
+        }
+
+        # Return response to the frontend
+        return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
+
+    return JsonResponse({"error": "No file received"}, status=400)
+
+
+
 def parse_qti_xml(request):
     """
     Parses a QTI XML file and saves extracted data to the database.
@@ -70,7 +93,7 @@ def parse_qti_xml(request):
         the_test_title = node.get("title")
         test_identifier = node.get("ident")
 
-        # Get the first available course (REMOVE AFTER TESTING)
+        # Get the first available course (REMOVE/CHANGE AFTER TESTING)
         the_course = Course.objects.first()
 
         if not the_course:
@@ -186,19 +209,34 @@ def parse_qti_xml(request):
                     # z
                 )
 
-    zip_file = None
-    if request.method == "POST" and request.FILES:
-        zip_file = list(request.FILES.values())[0]  # Convert files to list, then get first element
-        print("File uploaded:", zip_file.name)
+    #
+
+    # file_info is just used for testing. remove after (probably)
+    file_info = None
+
+    """
+    uploaded_file = None
+
+    # "file" in request.FILES.get("file") changes or depends on something in the HTML form
+    if request.method == "POST" and request.FILES.get("file"):
+        uploaded_file = request.FILES["file"]  # Get the uploaded file
+        print("File uploaded:", uploaded_file.name)
+
+        file_info = {
+            "filename": uploaded_file.name,
+            "size": uploaded_file.size
+        }
     else:
         print("No file uploaded to website.")
-    """
-    if zip_file == None:
+
+    if uploaded_file is None:
         return JsonResponse({"message": "No file uploaded to website."})
+
+    path_to_zip_file = uploaded_file
     """
 
-    #"""
     path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
+
     with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
         # List all files inside the zip file
         filename_list = zip_ref.namelist()
@@ -230,6 +268,9 @@ def parse_qti_xml(request):
 
 
             
-    #"""
+    #
 
-    return JsonResponse({"Success": "created Test record."}, status=555)
+    if file_info is None:
+        return JsonResponse({"Success": "created Test record."}, status=555)
+    else:
+        return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
