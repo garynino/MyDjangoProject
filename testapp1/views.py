@@ -22,29 +22,6 @@ def hello_world(request):
     return HttpResponse("Hello, world!")
 
 
-
-# View to render the upload page
-def upload_page(request):
-    return render(request, "upload.html")  # Adjust if needed
-
-# View to process the uploaded file (AJAX)
-def process_file(request):
-    if request.method == "POST" and request.FILES.get("file"):
-        uploaded_file = request.FILES["file"]
-
-        # Process the file (Example: Just reading its name and size)
-        file_info = {
-            "filename": uploaded_file.name,
-            "size": uploaded_file.size
-        }
-
-        # Return response to the frontend
-        return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
-
-    return JsonResponse({"error": "No file received"}, status=400)
-
-
-
 def parse_qti_xml(request):
     """
     Parses a QTI XML file and saves extracted data to the database.
@@ -55,6 +32,22 @@ def parse_qti_xml(request):
         for elem in given_tree.iter():
             if "}" in elem.tag:
                 elem.tag = elem.tag.split("}")[-1]
+
+    def create_question(g_course, g_q_type, g_q_text, g_points, g_inbedded, g_correct_graphic, g_chap_num):
+        temp_question_instance = Question.objects.create(
+            course=g_course,
+            question_type=g_q_type,
+            question_text=g_q_text,
+            # choices_for_question=answer_choices,
+            default_points=g_points,
+            inbedded_graphic=None,
+            # correct_answer=correct_answer_string,
+            correct_answer_graphic=None,
+            chapter_num=None
+            # z
+        )
+
+        return temp_question_instance
 
     def parse_just_xml(meta_path, non_meta_path):
 
@@ -93,11 +86,34 @@ def parse_qti_xml(request):
         the_test_title = node.get("title")
         test_identifier = node.get("ident")
 
-        # Get the first available course (REMOVE/CHANGE AFTER TESTING)
+        # Get the first available course (REMOVE AFTER TESTING)
         the_course = Course.objects.first()
 
+<<<<<<< Updated upstream
+=======
+        # This should be the correct thing is no course is selected/doesn't exist
+        """
+        if the_course is None:
+            return JsonResponse({"Error": "Either course was not selected or doesn't exist. "}, status=555)
+        """
+
+        # Used for testing. Remove after
+>>>>>>> Stashed changes
+        if the_course is None:
+            the_course = Course.objects.create(
+                course_code='CS123',
+                course_name='placeholder_course',
+                textbook_title='placeholder Tb title',
+                textbook_author='placeholder author',
+                textbook_isbn='placeholder isbn',
+                textbook_link='placeholder Tb link'
+            )
+
+<<<<<<< Updated upstream
         if not the_course:
             return JsonResponse({"error": "No course found. Cannot create Test record."}, status=400)
+=======
+>>>>>>> Stashed changes
 
         # Create a new Test record
         test_instance = Test.objects.create(
@@ -112,7 +128,8 @@ def parse_qti_xml(request):
                 # Extract 'ident' attribute
                 # temp1 = item.get("ident")
 
-                qti_metadata_fields = item.findall(".//fieldentry")
+                node = item.find('itemmetadata')
+                qti_metadata_fields = node.findall(".//fieldentry")
 
                 node = item.find('presentation')
                 temp_node = node.find('material')       # possibly redundant statement
@@ -120,57 +137,117 @@ def parse_qti_xml(request):
 
                 question_text_field = temp_node.text
 
-                # node should currently be already = element w 'presentation' tag
-
                 # For now, correct answer is simply a string, Probably need to change to a table later
                 correct_answer_string = None
                 answer_choices = None
 
+                correct_answer_ident = None
+
                 the_question_type = qti_metadata_fields[0].text
                 max_points_for_question = float(qti_metadata_fields[1].text)
 
+<<<<<<< Updated upstream
+                #MultiChoice & TF might be able to be combined. For now, they are separate
+=======
+                # node should currently be already = element w 'presentation' tag
+                # MultiChoice & TF might be able to be combined. For now, they are separate
+>>>>>>> Stashed changes
                 if the_question_type == 'multiple_choice_question':
                     #
                     node = node.find('.//response_lid')
-                    answer_choices = ""
-                    for mattext in node.findall('.//mattext'):
-                        answer_choices = answer_choices + mattext.text + "; "
+                    answer_choices_dict = {}
+                    for response_label_elem in node.findall('.//response_label'):
+                        response_ident = response_label_elem.get('ident')
+                        response_text = response_label_elem.find('.//mattext').text
+                        answer_choices_dict[response_ident] = response_text
 
                     node = item.find('resprocessing')
                     for respcondition_elem in node.findall('.//respcondition'):
                         if respcondition_elem.get('continue') == "No":
+<<<<<<< Updated upstream
                             temp_node = node.find('.//varequal')
-                            correct_answer_string = temp_node.text
+                            correct_answer_ident = temp_node.text
+=======
+                            temp_node = respcondition_elem.find('.//varequal')
+                            correct_answer_ident = temp_node.text
+
+                    question_instance = create_question(the_course, the_question_type, question_text_field, max_points_for_question, None, None, None)
+
+                    for key, value in answer_choices_dict.items():
+                        answeroption_instance = AnswerOption.objects.create(
+                            question=question_instance,
+                            text=value,
+                            is_correct=True if key == correct_answer_ident else False  # Inline conditional check
+                        )
+>>>>>>> Stashed changes
 
                 elif the_question_type == 'true_false_question':
                     node = node.find('.//response_lid')
-                    answer_choices = ""
-                    for mattext in node.findall('.//mattext'):
-                        answer_choices = answer_choices + mattext.text + "; "
+                    answer_choices_dict = {}
+                    for response_label_elem in node.findall('.//response_label'):
+                        response_ident = response_label_elem.get('ident')
+                        response_text = response_label_elem.find('.//mattext').text
+                        answer_choices_dict[response_ident] = response_text
 
                     node = item.find('resprocessing')
                     for respcondition_elem in node.findall('.//respcondition'):
                         if respcondition_elem.get('continue') == "No":
-                            temp_node = node.find('.//varequal')
-                            correct_answer_string = temp_node.text
+                            temp_node = respcondition_elem.find('.//varequal')
+                            correct_answer_ident = temp_node.text
+
+                    question_instance = create_question(the_course, the_question_type, question_text_field,
+                                                        max_points_for_question, None, None, None)
+
+                    for key, value in answer_choices_dict.items():
+                        answeroption_instance = AnswerOption.objects.create(
+                            question=question_instance,
+                            text=value,
+                            is_correct=True if key == correct_answer_ident else False  # Inline conditional check
+                        )
                 elif the_question_type == 'short_answer_question':  # Fill-in-the-blank question
-                    answer_choices = None
+
+                    question_instance = create_question(
+                        the_course, the_question_type, question_text_field,
+                        max_points_for_question, None, None, None
+                    )
 
                     node = item.find('resprocessing')
                     for respcondition_elem in node.findall('.//respcondition'):
                         if respcondition_elem.get('continue') == "No":
-                            #
-                            correct_answer_string = ""
                             for varequal_elem in respcondition_elem.findall('.//varequal'):
-                                correct_answer_string = correct_answer_string + varequal_elem.text + "; "
+
+                                answeroption_instance = AnswerOption.objects.create(
+                                    question=question_instance,
+                                    text=varequal_elem.text,
+                                    is_correct=True
+                                )
 
                 elif the_question_type == 'fill_in_multiple_blanks_question':
                     print('')       # this is placeholder for code to extract info from question for table
                 elif the_question_type == 'multiple_answers_question':
+                    correct_answer_ident_list = []
                     node = node.find('.//response_lid')
-                    answer_choices = ""
-                    for mattext in node.findall('.//mattext'):
-                        answer_choices = answer_choices + mattext.text + "; "
+                    answer_choices_dict = {}
+                    for response_label_elem in node.findall('.//response_label'):
+                        response_ident = response_label_elem.get('ident')
+                        response_text = response_label_elem.find('.//mattext').text
+                        answer_choices_dict[response_ident] = response_text
+
+                    node = item.find('resprocessing')
+                    for respcondition_elem in node.findall('.//respcondition'):
+                        if respcondition_elem.get('continue') == "No":
+                            for varequal_elem in respcondition_elem.find('conditionvar').find('and').findall('varequal'):
+                                correct_answer_ident_list.append(varequal_elem.text)
+
+                    question_instance = create_question(the_course, the_question_type, question_text_field,
+                                                        max_points_for_question, None, None, None)
+
+                    for key, value in answer_choices_dict.items():
+                        answeroption_instance = AnswerOption.objects.create(
+                            question=question_instance,
+                            text=value,
+                            is_correct=True if key in correct_answer_ident_list else False # Check if key is in list
+                        )
 
                 elif the_question_type == 'multiple_dropdowns_question':
                     print('')       # this is placeholder for code to extract info from question for table
@@ -195,25 +272,45 @@ def parse_qti_xml(request):
 
                 #
 
-                # zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
-
+                # May need later, but replaced by function for now
+                """
                 question_instance = Question.objects.create(
                     course=the_course,
                     question_type=the_question_type,
                     question_text=question_text_field,
-                    choices_for_question=answer_choices,
+                    # choices_for_question=answer_choices,
                     default_points=max_points_for_question,
                     inbedded_graphic=None,
-                    correct_answer=correct_answer_string,
-                    correct_answer_graphic=None
+                    # correct_answer=correct_answer_string,
+                    correct_answer_graphic=None,
+                    chapter_num=None
                     # z
                 )
+                """
 
-    #
+                """
+                answeroption_instance = AnswerOption.objects.create(
+                    question=question_instance
+                    #
+                )
+                """
 
+                answeroption_instance = AnswerOption.objects.create(
+                    question=question_instance
+                    #
+                )
+
+<<<<<<< Updated upstream
+    zip_file = None
+    if request.method == "POST" and request.FILES:
+        zip_file = list(request.FILES.values())[0]  # Convert files to list, then get first element
+        print("File uploaded:", zip_file.name)
+=======
     # file_info is just used for testing. remove after (probably)
     file_info = None
 
+    # This code within the double quotes should be the final code,
+    # but it is harder to test with this.
     """
     uploaded_file = None
 
@@ -226,17 +323,16 @@ def parse_qti_xml(request):
             "filename": uploaded_file.name,
             "size": uploaded_file.size
         }
+>>>>>>> Stashed changes
     else:
         print("No file uploaded to website.")
-
-    if uploaded_file is None:
+    """
+    if zip_file == None:
         return JsonResponse({"message": "No file uploaded to website."})
-
-    path_to_zip_file = uploaded_file
     """
 
+    #"""
     path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
-
     with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
         # List all files inside the zip file
         filename_list = zip_ref.namelist()
@@ -268,9 +364,14 @@ def parse_qti_xml(request):
 
 
             
-    #
+    #"""
 
+<<<<<<< Updated upstream
+    return JsonResponse({"Success": "created Test record."}, status=555)
+=======
+    # This is here to avoid errors when switching between testing without a frontend and with a frontend.
     if file_info is None:
         return JsonResponse({"Success": "created Test record."}, status=555)
     else:
         return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
+>>>>>>> Stashed changes
