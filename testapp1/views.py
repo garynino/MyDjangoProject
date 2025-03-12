@@ -22,6 +22,9 @@ def hello_world(request):
     return HttpResponse("Hello, world!")
 
 
+def upload_page(request):
+    return render(request, "upload.html")  # Adjust if needed
+
 def parse_qti_xml(request):
     """
     Parses a QTI XML file and saves extracted data to the database.
@@ -33,6 +36,7 @@ def parse_qti_xml(request):
             if "}" in elem.tag:
                 elem.tag = elem.tag.split("}")[-1]
 
+    # creates a new question record/entry
     def create_question(g_course, g_q_type, g_q_text, g_points, g_inbedded, g_correct_graphic, g_chap_num):
         temp_question_instance = Question.objects.create(
             course=g_course,
@@ -52,9 +56,8 @@ def parse_qti_xml(request):
     def parse_just_xml(meta_path, non_meta_path):
 
         print(f"processing file: {meta_path}")
-
+        # path to metadata file
         xml_file_path = meta_path
-        #xml_file_path = "assessment_meta.xml"
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
         remove_namespace(root)
@@ -62,11 +65,8 @@ def parse_qti_xml(request):
         cover_instructions_text = root.find('.//description').text
 
         print(f"processing file: {non_meta_path}")
-
-        # Path to the XML file
+        # Path to the questions file
         xml_file_path = non_meta_path
-        #xml_file_path = "ge78b00fbbb9de0420718b00bd11a7812.xml"
-        # Load XML
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
 
@@ -74,7 +74,6 @@ def parse_qti_xml(request):
 
         # Remove namespaces
         remove_namespace(root)
-
         # Find the 'assessment' element
         my_tag = "assessment"
         node = root.find(my_tag)
@@ -82,7 +81,7 @@ def parse_qti_xml(request):
         if node is None:
             return JsonResponse({"error": f"Element '{my_tag}' not found in XML!"}, status=400)
 
-        # Extract 'ident' and 'title' attribute
+        # Extract 'ident' and 'title' attribute from the element that node represents
         the_test_title = node.get("title")
         test_identifier = node.get("ident")
 
@@ -116,23 +115,21 @@ def parse_qti_xml(request):
         )
 
         for section in root.findall(".//section"):
-            for item in section.findall(".//item"):        # might change to section.findall(".//item")
-                # Extract 'ident' attribute
-                # temp1 = item.get("ident")
+            for item in section.findall(".//item"):
 
+                # all useful metadata fiels are found in the fieldentry elements under itemmetadata
                 node = item.find('itemmetadata')
                 qti_metadata_fields = node.findall(".//fieldentry")
 
                 node = item.find('presentation')
+
                 temp_node = node.find('material')       # possibly redundant statement
                 temp_node = temp_node.find(".//mattext")
-
+                # question_text_field contains the question prompt text
                 question_text_field = temp_node.text
 
-                # For now, correct answer is simply a string, Probably need to change to a table later
-                correct_answer_string = None
-                answer_choices = None
-
+                # each response has an ID represented as "ident" in the XML
+                # the ID is used to know what the correct response is
                 correct_answer_ident = None
 
                 the_question_type = qti_metadata_fields[0].text
@@ -255,86 +252,74 @@ def parse_qti_xml(request):
 
                 #
 
-                # May need later, but replaced by function for now
-                """
-                question_instance = Question.objects.create(
-                    course=the_course,
-                    question_type=the_question_type,
-                    question_text=question_text_field,
-                    # choices_for_question=answer_choices,
-                    default_points=max_points_for_question,
-                    inbedded_graphic=None,
-                    # correct_answer=correct_answer_string,
-                    correct_answer_graphic=None,
-                    chapter_num=None
-                    # z
-                )
-                
-                answeroption_instance = AnswerOption.objects.create(
-                    question=question_instance
-                    #
-                )
-                """
+    # file_info is just used for testing. remove after (probably)
+    # for now, what the Parser returns depends on this
+    file_info = None
 
-        # file_info is just used for testing. remove after (probably)
-        file_info = None
+    #""" 00 Code in triple quotes is used for when merged with frontend
+    uploaded_file = None
 
-        # Code in double quotes is used for when merged with frontend
-        """
-        uploaded_file = None
+    # "file" in request.FILES.get("file") changes or depends on something in the HTML/javascript form
+    if request.method == "POST" and request.FILES.get("file"):
+        uploaded_file = request.FILES["file"]  # Get the uploaded file
+        print("File uploaded:", uploaded_file.name)
 
-        # "file" in request.FILES.get("file") changes or depends on something in the HTML form
-        if request.method == "POST" and request.FILES.get("file"):
-            uploaded_file = request.FILES["file"]  # Get the uploaded file
-            print("File uploaded:", uploaded_file.name)
+        file_info = {
+            "filename": uploaded_file.name,
+            "size": uploaded_file.size
+        }
+    else:
+        print("No file uploaded to website.")
 
-            file_info = {
-                "filename": uploaded_file.name,
-                "size": uploaded_file.size
-            }
-        else:
-            print("No file uploaded to website.")
+    if uploaded_file is None:
+        return JsonResponse({"message": "No file uploaded or it doesn't exist.", "file_info": file_info})
+    # 00 """
 
-        if uploaded_file is None:
-            return JsonResponse({"message": "No file uploaded or it doesn't exist.", "file_info": file_info})
-
-        path_to_zip_file = uploaded_file
-        """
-
-        # Remove/comment this line out when not testing
+    # this is used to stop removing and adding "#" when switching between tests
+    if uploaded_file is None:
         path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
+    else:
+        path_to_zip_file = uploaded_file
 
-        with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
-            # List all files inside the zip file
-            filename_list = zip_ref.namelist()
+    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+        # List all files inside the zip file
+        filename_list = zip_ref.namelist()
 
-            for file_name in filename_list:
+        for file_name in filename_list:
 
-                if file_name.endswith('/'):
+            # looks for folders that are direct children of the zipfile
+            if file_name.endswith('/'):
 
-                    temp_file_list = []
+                temp_file_list = []
 
-                    for temp_filename in filename_list:
-                        if temp_filename.startswith(f'{file_name}') and (temp_filename != file_name):
-                            temp_file_list.append(temp_filename)
+                # looks for files that are children of the found folder, then adds them to a list
+                for temp_filename in filename_list:
+                    if temp_filename.startswith(f'{file_name}') and (temp_filename != file_name):
+                        temp_file_list.append(temp_filename)
 
-                    if temp_file_list:
-                        temp_file_list = sorted(temp_file_list)
+                # if a folder is not empty, process the files in it with the parser
+                if temp_file_list:
 
-                        assessment_meta_path = temp_file_list[0]
-                        questions_file_path = temp_file_list[1]
+                    # sort the files in the list because the metadata file for assessments is always
+                    # named assessment_meta.xml, but the file with questions seems to always
+                    # start with the letter "g"
+                    temp_file_list = sorted(temp_file_list)
+                    assessment_meta_path = temp_file_list[0]
+                    questions_file_path = temp_file_list[1]
 
-                        with zip_ref.open(assessment_meta_path) as outer_file:
-                            with zip_ref.open(questions_file_path) as inner_file:
-                                outer_file.seek(0)  # Reset file pointer
-                                inner_file.seek(0)
+                    with zip_ref.open(assessment_meta_path) as outer_file:
+                        with zip_ref.open(questions_file_path) as inner_file:
+                            outer_file.seek(0)  # Reset file pointer
+                            inner_file.seek(0)
 
-                                parse_just_xml(outer_file, inner_file)
-                                #
+                            # this calls the function that actually handles the parsing
+                            parse_just_xml(outer_file, inner_file)
+                            #
 
-        #
+    #
 
-        if file_info is None:
-            return JsonResponse({"Success": "created Test record."}, status=555)
-        else:
-            return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
+    # this is here because the javascript that calls the Parser depends on what it returns
+    if file_info is None:
+        return JsonResponse({"Success": "created Test record."}, status=555)
+    else:
+        return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
