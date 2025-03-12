@@ -89,8 +89,6 @@ def parse_qti_xml(request):
         # Get the first available course (REMOVE AFTER TESTING)
         the_course = Course.objects.first()
 
-<<<<<<< Updated upstream
-=======
         # This should be the correct thing is no course is selected/doesn't exist
         """
         if the_course is None:
@@ -98,7 +96,6 @@ def parse_qti_xml(request):
         """
 
         # Used for testing. Remove after
->>>>>>> Stashed changes
         if the_course is None:
             the_course = Course.objects.create(
                 course_code='CS123',
@@ -109,11 +106,6 @@ def parse_qti_xml(request):
                 textbook_link='placeholder Tb link'
             )
 
-<<<<<<< Updated upstream
-        if not the_course:
-            return JsonResponse({"error": "No course found. Cannot create Test record."}, status=400)
-=======
->>>>>>> Stashed changes
 
         # Create a new Test record
         test_instance = Test.objects.create(
@@ -146,12 +138,8 @@ def parse_qti_xml(request):
                 the_question_type = qti_metadata_fields[0].text
                 max_points_for_question = float(qti_metadata_fields[1].text)
 
-<<<<<<< Updated upstream
-                #MultiChoice & TF might be able to be combined. For now, they are separate
-=======
                 # node should currently be already = element w 'presentation' tag
                 # MultiChoice & TF might be able to be combined. For now, they are separate
->>>>>>> Stashed changes
                 if the_question_type == 'multiple_choice_question':
                     #
                     node = node.find('.//response_lid')
@@ -164,10 +152,6 @@ def parse_qti_xml(request):
                     node = item.find('resprocessing')
                     for respcondition_elem in node.findall('.//respcondition'):
                         if respcondition_elem.get('continue') == "No":
-<<<<<<< Updated upstream
-                            temp_node = node.find('.//varequal')
-                            correct_answer_ident = temp_node.text
-=======
                             temp_node = respcondition_elem.find('.//varequal')
                             correct_answer_ident = temp_node.text
 
@@ -179,7 +163,6 @@ def parse_qti_xml(request):
                             text=value,
                             is_correct=True if key == correct_answer_ident else False  # Inline conditional check
                         )
->>>>>>> Stashed changes
 
                 elif the_question_type == 'true_false_question':
                     node = node.find('.//response_lid')
@@ -286,92 +269,72 @@ def parse_qti_xml(request):
                     chapter_num=None
                     # z
                 )
-                """
-
-                """
+                
                 answeroption_instance = AnswerOption.objects.create(
                     question=question_instance
                     #
                 )
                 """
 
-                answeroption_instance = AnswerOption.objects.create(
-                    question=question_instance
-                    #
-                )
+        # file_info is just used for testing. remove after (probably)
+        file_info = None
 
-<<<<<<< Updated upstream
-    zip_file = None
-    if request.method == "POST" and request.FILES:
-        zip_file = list(request.FILES.values())[0]  # Convert files to list, then get first element
-        print("File uploaded:", zip_file.name)
-=======
-    # file_info is just used for testing. remove after (probably)
-    file_info = None
+        # Code in double quotes is used for when merged with frontend
+        """
+        uploaded_file = None
 
-    # This code within the double quotes should be the final code,
-    # but it is harder to test with this.
-    """
-    uploaded_file = None
+        # "file" in request.FILES.get("file") changes or depends on something in the HTML form
+        if request.method == "POST" and request.FILES.get("file"):
+            uploaded_file = request.FILES["file"]  # Get the uploaded file
+            print("File uploaded:", uploaded_file.name)
 
-    # "file" in request.FILES.get("file") changes or depends on something in the HTML form
-    if request.method == "POST" and request.FILES.get("file"):
-        uploaded_file = request.FILES["file"]  # Get the uploaded file
-        print("File uploaded:", uploaded_file.name)
+            file_info = {
+                "filename": uploaded_file.name,
+                "size": uploaded_file.size
+            }
+        else:
+            print("No file uploaded to website.")
 
-        file_info = {
-            "filename": uploaded_file.name,
-            "size": uploaded_file.size
-        }
->>>>>>> Stashed changes
-    else:
-        print("No file uploaded to website.")
-    """
-    if zip_file == None:
-        return JsonResponse({"message": "No file uploaded to website."})
-    """
+        if uploaded_file is None:
+            return JsonResponse({"message": "No file uploaded or it doesn't exist.", "file_info": file_info})
 
-    #"""
-    path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
-    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
-        # List all files inside the zip file
-        filename_list = zip_ref.namelist()
+        path_to_zip_file = uploaded_file
+        """
 
-        for file_name in filename_list:
+        # Remove/comment this line out when not testing
+        path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
 
-            if file_name.endswith('/'):
+        with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+            # List all files inside the zip file
+            filename_list = zip_ref.namelist()
 
-                temp_file_list = []
+            for file_name in filename_list:
 
-                for temp_filename in filename_list:
-                    if temp_filename.startswith(f'{file_name}') and (temp_filename != file_name):
-                        temp_file_list.append(temp_filename)
+                if file_name.endswith('/'):
 
-                if temp_file_list:
-                    temp_file_list = sorted(temp_file_list)
+                    temp_file_list = []
 
-                    assessment_meta_path = temp_file_list[0]
-                    questions_file_path = temp_file_list[1]
+                    for temp_filename in filename_list:
+                        if temp_filename.startswith(f'{file_name}') and (temp_filename != file_name):
+                            temp_file_list.append(temp_filename)
 
-                    with zip_ref.open(assessment_meta_path) as outer_file:
-                        with zip_ref.open(questions_file_path) as inner_file:
+                    if temp_file_list:
+                        temp_file_list = sorted(temp_file_list)
 
-                            outer_file.seek(0)  # Reset file pointer
-                            inner_file.seek(0)
+                        assessment_meta_path = temp_file_list[0]
+                        questions_file_path = temp_file_list[1]
 
-                            parse_just_xml(outer_file, inner_file)
-                            #
+                        with zip_ref.open(assessment_meta_path) as outer_file:
+                            with zip_ref.open(questions_file_path) as inner_file:
+                                outer_file.seek(0)  # Reset file pointer
+                                inner_file.seek(0)
 
+                                parse_just_xml(outer_file, inner_file)
+                                #
 
-            
-    #"""
+        #
 
-<<<<<<< Updated upstream
-    return JsonResponse({"Success": "created Test record."}, status=555)
-=======
-    # This is here to avoid errors when switching between testing without a frontend and with a frontend.
-    if file_info is None:
-        return JsonResponse({"Success": "created Test record."}, status=555)
-    else:
-        return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
->>>>>>> Stashed changes
+        if file_info is None:
+            return JsonResponse({"Success": "created Test record."}, status=555)
+        else:
+            return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
