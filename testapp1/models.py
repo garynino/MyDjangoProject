@@ -81,8 +81,8 @@ class Question(models.Model):
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     question_type = models.CharField(max_length=50, choices=question_type_options)
-    question_text = models.TextField(help_text='Question Prompt.', default='Question text.')
-    inbedded_graphic = models.ImageField(max_length=200, null=True, blank=True)
+    question_text = models.TextField(help_text='Question Prompt.', default='Question text.', null=True)
+    embedded_graphic = models.ImageField(max_length=200, null=True, blank=True) # changed name of field
 
     # Removed these fields to avoid storing all answer info as text:
     # choices_for_question = models.TextField(null=True, blank=True, help_text='Answer options for the question.')
@@ -98,6 +98,12 @@ class Question(models.Model):
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     chapter_num = models.PositiveIntegerField(null=True, blank=True,
                                               help_text="Required for publisher-created questions.")
+
+    # these were added by Gary to support ingrained general_feedback on questions.
+    # Gary has no idea what blank=True does :)
+    general_feedback_text = models.TextField(null=True, blank=True)
+    feedback_graphic = models.ImageField(null=True, blank=True)
+    feedback_type = models.TextField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -123,8 +129,13 @@ Used for questions with multiple responses or multiple correct answers.
 
 class AnswerOption(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="answer_options")
-    text = models.TextField(help_text="Answer option text")
+    text = models.TextField(help_text="Answer option text", null=True)
     is_correct = models.BooleanField(default=False, help_text="Designates if this option is a correct answer.")
+    answer_graphic = models.ImageField(upload_to='answer_graphics/', null=True, blank=True)
+
+    # added by Gary to support ingrained feedback on responses. this feedback pops up when a response is picked
+    response_feedback_text = models.TextField(null=True, blank=True)
+    response_feedback_graphic = models.ImageField(null=True, blank=True)
 
     def __str__(self):
         return self.text

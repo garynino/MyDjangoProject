@@ -1,6 +1,9 @@
 # Create your views here.
+import urllib.parse
 from zipfile import Path
 
+from bs4 import BeautifulSoup
+from django.core.files.base import ContentFile
 from django.shortcuts import render
 
 from django.http import HttpResponse
@@ -30,6 +33,11 @@ def parse_qti_xml(request):
     Parses a QTI XML file and saves extracted data to the database.
     """
 
+    class ImageDataPair:
+        def __init__(self, raw_image_data, actual_image_name):
+            self.raw_image_data = raw_image_data
+            self.actual_image_name = actual_image_name
+
     # Function to remove namespaces
     def remove_namespace(given_tree):
         for elem in given_tree.iter():
@@ -37,21 +45,44 @@ def parse_qti_xml(request):
                 elem.tag = elem.tag.split("}")[-1]
 
     # creates a new question record/entry
-    def create_question(g_course, g_q_type, g_q_text, g_points, g_inbedded, g_correct_graphic, g_chap_num):
+    def create_question(g_course, g_q_type, g_q_text, g_points, g_g_f_t, g_f_g, g_f_t):
         temp_question_instance = Question.objects.create(
             course=g_course,
             question_type=g_q_type,
             question_text=g_q_text,
-            # choices_for_question=answer_choices,
             default_points=g_points,
-            inbedded_graphic=None,
-            # correct_answer=correct_answer_string,
-            correct_answer_graphic=None,
-            chapter_num=None
+            general_feedback_text=g_g_f_t,
+            feedback_graphic=g_f_g,
+            feedback_type=g_f_t,
             # z
         )
 
         return temp_question_instance
+
+    def check_embedded_graphic(text_q):
+        # Parse the HTML using BeautifulSoup4 library
+        soup = BeautifulSoup(text_q, 'html.parser')
+        # Find the <img> tag
+        img_element = soup.find('img')
+        found_the_image = False
+        if img_element:  # if we find an embedded image
+            temp_file_path1 = img_element.get('src')  # gets the src attribute of img element
+            url_encoded_path = temp_file_path1[18:]  # length of "$IMS-CC-FILEBASE$/" is 18
+            decoded_path = urllib.parse.unquote(url_encoded_path)  # this decodes URL-encoded path
+
+            for potential_image_name in filename_list:  # this assumes an outer function has: filename_list = zip_ref.namelist()
+                if potential_image_name.endswith(decoded_path):
+                    found_the_image = True
+                    my_image_name = img_element.get('alt')
+                    with zip_ref.open(potential_image_name) as desired_img_file:  # open the image file
+                        img_data = desired_img_file.read() # this is the raw image data
+                        data_to_return = ImageDataPair(img_data, my_image_name)
+            if not found_the_image:
+                print('Desired image not found')  # used for debugging
+        if img_element is None or found_the_image == False:
+            return None
+        else:
+            return data_to_return
 
     def parse_just_xml(meta_path, non_meta_path):
 
@@ -152,7 +183,15 @@ def parse_qti_xml(request):
                             temp_node = respcondition_elem.find('.//varequal')
                             correct_answer_ident = temp_node.text
 
+                    # this creates a question record in database
                     question_instance = create_question(the_course, the_question_type, question_text_field, max_points_for_question, None, None, None)
+
+                    image_data_pair = check_embedded_graphic(question_text_field)
+                    if image_data_pair is not None:
+                        # Save the image to the embedded_graphic field, then update the record/entry
+                        question_instance.embedded_graphic.save(image_data_pair.actual_image_name, ContentFile(image_data_pair.raw_image_data))
+                        question_instance.save()
+                        print(f"{question_instance.embedded_graphic.url}")
 
                     for key, value in answer_choices_dict.items():
                         answeroption_instance = AnswerOption.objects.create(
@@ -256,9 +295,12 @@ def parse_qti_xml(request):
     # for now, what the Parser returns depends on this
     file_info = None
 
-    #""" 00 Code in triple quotes is used for when merged with frontend
+
     uploaded_file = None
 
+    """ 
+    # 00 Begin
+    # Code in triple quotes is used for when merged with frontend
     # "file" in request.FILES.get("file") changes or depends on something in the HTML/javascript form
     if request.method == "POST" and request.FILES.get("file"):
         uploaded_file = request.FILES["file"]  # Get the uploaded file
@@ -273,11 +315,13 @@ def parse_qti_xml(request):
 
     if uploaded_file is None:
         return JsonResponse({"message": "No file uploaded or it doesn't exist.", "file_info": file_info})
-    # 00 """
+    # 00 End
+    """
 
     # this is used to stop removing and adding "#" when switching between tests
     if uploaded_file is None:
         path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
+        #path_to_zip_file = 'added reponse feedback.zip'
     else:
         path_to_zip_file = uploaded_file
 
@@ -298,7 +342,7 @@ def parse_qti_xml(request):
                         temp_file_list.append(temp_filename)
 
                 # if a folder is not empty, process the files in it with the parser
-                if temp_file_list:
+                if temp_file_list and len(temp_file_list) >= 2 and temp_file_list[0].endswith('.xml') and temp_file_list[1].endswith('.xml'):
 
                     # sort the files in the list because the metadata file for assessments is always
                     # named assessment_meta.xml, but the file with questions seems to always
