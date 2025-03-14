@@ -28,6 +28,7 @@ def hello_world(request):
 def upload_page(request):
     return render(request, "upload.html")  # Adjust if needed
 
+
 def parse_qti_xml(request):
     """
     Parses a QTI XML file and saves extracted data to the database.
@@ -84,7 +85,7 @@ def parse_qti_xml(request):
         else:
             return data_to_return
 
-    def parse_just_xml(meta_path, non_meta_path):
+    def parse_just_xml(meta_path, non_meta_path, the_course):
 
         print(f"processing file: {meta_path}")
         # path to metadata file
@@ -115,27 +116,6 @@ def parse_qti_xml(request):
         # Extract 'ident' and 'title' attribute from the element that node represents
         the_test_title = node.get("title")
         test_identifier = node.get("ident")
-
-        # Get the first available course (REMOVE AFTER TESTING)
-        the_course = Course.objects.first()
-
-        # This should be the correct thing is no course is selected/doesn't exist
-        """
-        if the_course is None:
-            return JsonResponse({"Error": "Either course was not selected or doesn't exist. "}, status=555)
-        """
-
-        # Used for testing. Remove after
-        if the_course is None:
-            the_course = Course.objects.create(
-                course_code='CS123',
-                course_name='placeholder_course',
-                textbook_title='placeholder Tb title',
-                textbook_author='placeholder author',
-                textbook_isbn='placeholder isbn',
-                textbook_link='placeholder Tb link'
-            )
-
 
         # Create a new Test record
         test_instance = Test.objects.create(
@@ -298,7 +278,7 @@ def parse_qti_xml(request):
 
     uploaded_file = None
 
-    """ 
+    #"""
     # 00 Begin
     # Code in triple quotes is used for when merged with frontend
     # "file" in request.FILES.get("file") changes or depends on something in the HTML/javascript form
@@ -315,13 +295,53 @@ def parse_qti_xml(request):
 
     if uploaded_file is None:
         return JsonResponse({"message": "No file uploaded or it doesn't exist.", "file_info": file_info})
+
+    course_id = request.POST.get("courseID")
+    course_name = request.POST.get("courseName")
+    course_crn = request.POST.get("courseCRN") # not in database
+    course_semester = request.POST.get("courseSemester") # not in database
+    course_textbook_title = request.POST.get("courseTextbookTitle")
+    course_textbook_author = request.POST.get("courseTextbookAuthor")
+    course_textbook_version = request.POST.get("courseTextbookVersion") # not in database
+    course_textbook_isbn = request.POST.get("courseTextbookISBN")
+    course_textbook_link = request.POST.get("courseTextbookLink")
+
+    course_instance, created = Course.objects.get_or_create(
+        course_code=course_id,
+        defaults={
+            "course_name": course_name,
+            "textbook_title": course_textbook_title,
+            "textbook_author": course_textbook_author,
+            "textbook_isbn": course_textbook_isbn,
+            "textbook_link": course_textbook_link,
+        }
+    )
+
+    print(course_id)
+    print(course_name)
+    print(course_instance)
+
     # 00 End
-    """
+    #"""
 
     # this is used to stop removing and adding "#" when switching between tests
     if uploaded_file is None:
         path_to_zip_file = 'qti sample w one quiz-slash-test w all typesofquestions.zip'
-        #path_to_zip_file = 'added reponse feedback.zip'
+        #path_to_zip_file = 'added response feedback.zip'
+
+        # Get the first available course (REMOVE AFTER TESTING)
+        course_instance = Course.objects.first()
+
+        # Used for testing. Remove after
+        if course_instance is None:
+            course_instance = Course.objects.create(
+                course_code='CS123',
+                course_name='placeholder_course',
+                textbook_title='placeholder Tb title',
+                textbook_author='placeholder author',
+                textbook_isbn='placeholder isbn',
+                textbook_link='placeholder Tb link'
+            )
     else:
         path_to_zip_file = uploaded_file
 
@@ -357,7 +377,7 @@ def parse_qti_xml(request):
                             inner_file.seek(0)
 
                             # this calls the function that actually handles the parsing
-                            parse_just_xml(outer_file, inner_file)
+                            parse_just_xml(outer_file, inner_file, course_instance)
                             #
 
     #
@@ -367,3 +387,4 @@ def parse_qti_xml(request):
         return JsonResponse({"Success": "created Test record."}, status=555)
     else:
         return JsonResponse({"message": "File processed successfully!", "file_info": file_info})
+#

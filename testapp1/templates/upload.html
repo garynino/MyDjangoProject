@@ -39,8 +39,7 @@
 </head>
 <body>
     <h2>Upload a File for Processing</h2>
-    <input type="file" id="fileInput">
-    <button onclick="uploadFile()">Upload</button>
+    <input type="file" id="fileInput" onchange="uploadFile()">  <!-- Uploads automatically when file is selected -->
 
     <div id="result"></div>  <!-- This will show the response from the backend -->
 </body>
