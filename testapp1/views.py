@@ -1,30 +1,231 @@
 # Create your views here.
+import csv
+import json
 import time
 import urllib.parse
-from zipfile import Path
 
+import openpyxl
 from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
+from django.db import connection
 from django.shortcuts import render
 
-from django.http import HttpResponse
-
 from testapp1.models import *
-
 import xml.etree.ElementTree as ET
-
 import zipfile
+from django.http import JsonResponse
+
+from zipfile import Path
+from django.http import HttpResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
 
-from django.http import JsonResponse
-
-def hello_world(request):
-    return HttpResponse("Hello, world!")
-
+from openpyxl.utils import get_column_letter
 
 def upload_page(request):
     return render(request, "upload.html")  # Adjust if needed
+
+def export_csv(request):
+
+    #
+
+    print("export_csv view triggered") # used to make sure view function is being called
+
+    necessary_keys_dict = {
+        "welcome_course": {"textbook_id": []},
+    }
+
+    def make_new_sheet(wb, query):
+        #
+        cursor = connection.cursor()
+        cursor.execute(query) # cursor holds result from cursor.execute() query
+        table_name = query.split("FROM")[1].strip()
+
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+        sheet = wb.create_sheet(title=table_name)
+
+        # Write headers
+        for col_num, column_title in enumerate(columns, 1):
+            col_letter = get_column_letter(col_num)
+            sheet[f'{col_letter}1'] = column_title
+
+        # Write data rows
+        for row_num, row in enumerate(rows, 2):  # Start from row 2
+            for col_num, cell_value in enumerate(row, 1):
+                col_letter = get_column_letter(col_num)
+                sheet[f'{col_letter}{row_num}'] = cell_value
+
+        # end of make_new_sheet inner-function
+
+    # this function finds out whether the given record/entry is missing in the sheet by using record ID
+    def is_record_missing(id_to_check, sheet):
+        did_not_find = True
+        column_of_cells = sheet['A'] # this grabs a column of cells from an Excel worksheet
+        for cell in column_of_cells:
+            if cell.value == id_to_check:
+                did_not_find = False
+                return did_not_find
+
+        return did_not_find
+
+    def fill_out_sheet(sheet, query, lists_of_ids_dict, ids_to_grab_list):
+        cursor = connection.cursor()
+        cursor.execute(query)  # cursor holds result from cursor.execute() query
+        # grabs all rows that cursor is holding. each list object is a tuple. doesn't grab column-name row
+        rows = cursor.fetchall()
+        # this extracts column names from table metadata
+        # cursor.description is a list of tuples that contain table metadata
+        # column_info designates the tuple object that contains column info
+        # the first object in the column metadata-tuple is the column name; column_info[0]
+        column_name_list = [column_info[0] for column_info in cursor.description]
+
+        # this block enters the column names from database into the first row of Excel sheet
+        # uses the form:        for index, item in enumerate(my_list, number):
+        # number is where you start enumerating from. this enumeration starts from 1 (inclusive)
+        column_list_pair_dict = {} # BE CAREFUL! every column is actually column-1 for use with row list indexing
+        for cell_column, column_name in enumerate(column_name_list, 1):
+            cell_column_letter = get_column_letter(cell_column)  # get_column_letter maps number to letter
+            sheet[f'{cell_column_letter}1'] = column_name
+
+            if column_name in lists_of_ids_dict:
+                row_index = cell_column - 1
+                column_list_pair_dict[row_index] = lists_of_ids_dict.get(column_name) # creates int-list pair
+
+        current_records_in_file = 0
+        for column_to_check, list_with_ids in column_list_pair_dict.items():
+            # this block adds each desired database record to the Excel sheet
+            #current_records_in_file = 0 # commented out because i might need to put it back later
+            for row in rows:  # for every record/entry in list of records ...
+                if row[column_to_check] in list_with_ids and is_record_missing(row[0], sheet):  # check if ID in given ID-list
+                    for cell_column, field_value in enumerate(row, 1):
+                        cell_column_letter = get_column_letter(cell_column)
+                        sheet[f'{cell_column_letter}{(current_records_in_file + 2)}'] = field_value
+                    current_records_in_file += 1
+
+        dict_to_return = None
+        if ids_to_grab_list is not None:
+            dict_to_return = {} # (CHANGED) was list of lists. now, dictionary of lists.
+            #current_number_of_lists = 0
+            for index, column_id in enumerate(ids_to_grab_list, 0):
+                # dict_to_return.append([]) # (BEFORE). useless right now. might need later
+                desired_id = ids_to_grab_list[index]
+                dict_to_return[desired_id]= [] # (AFTER)
+                desired_id_column_letter = None # this is just to initialize and keep value outside the loop
+                for first_row_cell in sheet[1]:  # Gets all cells in row 1 of sheet and iterates
+                    if first_row_cell.value == desired_id: # if we found the column of the desired id
+                        desired_id_column_letter = get_column_letter(first_row_cell.column)
+                alleged_cell_column = sheet[desired_id_column_letter] # get entire column of cells
+                i = 1
+                for cell_in_column in alleged_cell_column:
+                    if i > 1:
+                        dict_to_return.get(desired_id).append(cell_in_column.value)
+                    i += 1
+
+        return dict_to_return
+
+    if request.method == "POST":
+        try: # json.loads() will cause an error if the json is invalid or empty
+            data = json.loads(request.body) # parses json and creates/saves into a dictionary
+        except json.JSONDecodeError: # might change to "json.decoder.JSONDecodeError"
+            print('Error. JSON is invalid or empty.')
+            return JsonResponse({'error': 'Invalid or empty JSON provided'}, status=400)
+
+        # gets lists from list dictionary. all of these are the ACTUAL IDs from the database (1st column)
+        course_id_list = data.get('course', [])
+        test_id_list = data.get('test', [])
+        question_id_list = data.get('questions', [])
+        type_of_export = data.get('typeOfExport', [])
+
+        course_id_list = list(set(course_id_list))
+        test_id_list = list(set(test_id_list))
+        question_id_list = list(set(question_id_list))
+
+        try: # tries to convert every list into a list of integers (except for type_of_export)
+            course_id_list = [int(course_id) for course_id in course_id_list]
+            test_id_list = [int(test_id) for test_id in test_id_list]
+            question_id_list = [int(question_id) for question_id in question_id_list]
+        except ValueError:
+            print('ID with NON-numeric ID-value provided')
+            return JsonResponse({'error': 'ID with NON-numeric ID-value provided'}, status=400)
+
+        try:
+            export_type = type_of_export[0]
+        except IndexError:
+            print('Export type not given')
+            return JsonResponse({'error': 'Export type not provided'}, status=400)
+
+        wb = openpyxl.Workbook() # creates the Workbook container object (Excel file)
+        wb.remove(wb.active)  # Remove the default blank sheet
+
+        if export_type == 'entire':
+            print(export_type) # placeholder
+
+        elif export_type == 'course':
+            print(course_id_list)
+            
+            if not course_id_list: # if given course list exists but is empty
+                print('No courses given to export')
+                return JsonResponse({'error': 'No courses given to export'}, status=400)
+
+            sheet = wb.create_sheet(title="welcome_course")
+            query = "SELECT * FROM welcome_course"
+
+            """ going to use these in a sec ...
+            table_name = 'welcome_course'
+            query = f"SELECT * FROM `{table_name}` LIMIT 100"
+            query = f"SELECT * FROM `{table_name}`"
+            """
+
+            id_dict = {}
+            id_dict['id'] = course_id_list # this makes a key-list pair entry in a dictionary
+            needed_ids_list = ["textbook_id"]
+            result_dict = fill_out_sheet(sheet, query, id_dict, needed_ids_list)
+            print(result_dict)
+
+
+        elif export_type == 'test':
+            print(test_id_list)
+
+            if test_id_list:
+                print('') # placeholder
+            else:
+                print('No tests given to export')
+                return JsonResponse({'error': 'No tests given to export'}, status=400)
+
+        elif export_type == 'questions':
+            print(question_id_list)
+
+            if question_id_list:
+                print('') # placeholder
+            else:
+                print('No questions given to export')
+                return JsonResponse({'error': 'No questions given to export'}, status=400)
+
+        else:
+            print('Invalid export type given')
+            return JsonResponse({'error': 'Invalid export type provided'}, status=400)
+
+        print("Final sheets in workbook:", wb.sheetnames)
+
+        # Save to a BytesIO stream instead of a file
+        from io import BytesIO
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        # Prepare the response
+        response = HttpResponse(
+            output,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=exported_data.xlsx'
+
+    print("did it get here???") # used for debugging
+
+    return response
+
+#
 
 
 def parse_qti_xml(request):
