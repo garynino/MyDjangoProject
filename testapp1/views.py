@@ -1,4 +1,5 @@
 # Create your views here.
+import copy
 import csv
 import json
 import time
@@ -31,33 +32,6 @@ def export_csv(request):
 
     print("export_csv view triggered") # used to make sure view function is being called
 
-    necessary_keys_dict = {
-        "welcome_course": {"textbook_id": []},
-    }
-
-    def make_new_sheet(wb, query):
-        #
-        cursor = connection.cursor()
-        cursor.execute(query) # cursor holds result from cursor.execute() query
-        table_name = query.split("FROM")[1].strip()
-
-        rows = cursor.fetchall()
-        columns = [col[0] for col in cursor.description]
-        sheet = wb.create_sheet(title=table_name)
-
-        # Write headers
-        for col_num, column_title in enumerate(columns, 1):
-            col_letter = get_column_letter(col_num)
-            sheet[f'{col_letter}1'] = column_title
-
-        # Write data rows
-        for row_num, row in enumerate(rows, 2):  # Start from row 2
-            for col_num, cell_value in enumerate(row, 1):
-                col_letter = get_column_letter(col_num)
-                sheet[f'{col_letter}{row_num}'] = cell_value
-
-        # end of make_new_sheet inner-function
-
     # this function finds out whether the given record/entry is missing in the sheet by using record ID
     def is_record_missing(id_to_check, sheet):
         did_not_find = True
@@ -69,6 +43,9 @@ def export_csv(request):
 
         return did_not_find
 
+    # returns dictionary of string-list pairs. each list is a list of IDs. uses ids_to_grab_list
+    # ids_to_grab_list contains the column names of columns that need to be scraped from Excel sheet
+    # lists_of_ids_dict is a dictionary of string-list pairs. each list has integers IDs
     def fill_out_sheet(sheet, query, lists_of_ids_dict, ids_to_grab_list):
         cursor = connection.cursor()
         cursor.execute(query)  # cursor holds result from cursor.execute() query
@@ -93,20 +70,21 @@ def export_csv(request):
                 column_list_pair_dict[row_index] = lists_of_ids_dict.get(column_name) # creates int-list pair
 
         current_records_in_file = 0
+        print(column_list_pair_dict)
         for column_to_check, list_with_ids in column_list_pair_dict.items():
             # this block adds each desired database record to the Excel sheet
             #current_records_in_file = 0 # commented out because i might need to put it back later
             for row in rows:  # for every record/entry in list of records ...
-                if row[column_to_check] in list_with_ids and is_record_missing(row[0], sheet):  # check if ID in given ID-list
-                    for cell_column, field_value in enumerate(row, 1):
-                        cell_column_letter = get_column_letter(cell_column)
-                        sheet[f'{cell_column_letter}{(current_records_in_file + 2)}'] = field_value
-                    current_records_in_file += 1
+                if row[column_to_check] is not None:
+                    if row[column_to_check] in list_with_ids and is_record_missing(row[0], sheet):  # check ID in list
+                        for cell_column, field_value in enumerate(row, 1):
+                            cell_column_letter = get_column_letter(cell_column)
+                            sheet[f'{cell_column_letter}{(current_records_in_file + 2)}'] = field_value
+                        current_records_in_file += 1
 
         dict_to_return = None
         if ids_to_grab_list is not None:
-            dict_to_return = {} # (CHANGED) was list of lists. now, dictionary of lists.
-            #current_number_of_lists = 0
+            dict_to_return = {} # dictionary of lists
             for index, column_id in enumerate(ids_to_grab_list, 0):
                 # dict_to_return.append([]) # (BEFORE). useless right now. might need later
                 desired_id = ids_to_grab_list[index]
@@ -118,11 +96,34 @@ def export_csv(request):
                 alleged_cell_column = sheet[desired_id_column_letter] # get entire column of cells
                 i = 1
                 for cell_in_column in alleged_cell_column:
-                    if i > 1:
+                    if i > 1 and cell_in_column.value is not None:
                         dict_to_return.get(desired_id).append(cell_in_column.value)
                     i += 1
 
         return dict_to_return
+
+    def set_up_then_call():
+        sheet = wb.create_sheet(title=f"{table_name}")
+        query = f"SELECT * FROM `{table_name}`"  # this uses BACKTICKS to dynamically query the database
+
+        needed_ids_list = copy.deepcopy(table_needs_these_ids_dict[table_name])
+        id_dict = {}
+        for id in needed_ids_list:
+            if cache_of_ids_dict.get(id) is not None: # avoid sending None objects instead of lists
+                id_dict[id] = cache_of_ids_dict.get(id)  # creates a key-list pair
+        id_dict = copy.deepcopy(id_dict)
+        if table_name in need_to_use_regular_id_dict:
+            if need_to_use_regular_id_dict.get(table_name) in id_dict: # avoid accessing key-value that doesnt exist
+                id_dict['id'] = id_dict.pop(need_to_use_regular_id_dict.get(table_name))  # removes pair after getting value
+        # id_dict['id'] = course_id_list  # this makes a key-list pair entry in a dictionary
+        need_to_grab_ids_list = need_to_look_for_dict.get(table_name)  # gets list of ids to scrape from database
+        result_dict = fill_out_sheet(sheet, query, id_dict, need_to_grab_ids_list)
+        print(result_dict)
+        if result_dict is not None:
+            for id_name, value in result_dict.items():
+                if id_name not in cache_of_ids_dict:
+                    cache_of_ids_dict[id_name] = value
+        print('') # just used to space things out for debugging
 
     if request.method == "POST":
         try: # json.loads() will cause an error if the json is invalid or empty
@@ -155,6 +156,64 @@ def export_csv(request):
             print('Export type not given')
             return JsonResponse({'error': 'Export type not provided'}, status=400)
 
+        """ this is to remind myself how to get a list of all the table names in the database (in case of a change)
+        table_names = connection.introspection.table_names()
+        print(table_names)
+        """
+
+        table_names_list = ['welcome_answers', 'welcome_attachment', 'welcome_course', 'welcome_coverpage',
+                       'welcome_feedback', 'welcome_feedbackresponse',
+                       'welcome_options', 'welcome_question', 'welcome_template', 'welcome_test',
+                       'welcome_test_attachments', 'welcome_testpart', 'welcome_testquestion', 'welcome_testsection',
+                       'welcome_textbook']
+
+        course_table_names_list = ['welcome_course', 'welcome_textbook']
+
+        test_table_names_list = ['welcome_test', 'welcome_template', 'welcome_coverpage', 'welcome_test_attachments',
+                                 'welcome_attachment', 'welcome_testquestion', 'welcome_testsection',
+                                 'welcome_testpart']
+
+        question_table_names_list = ['welcome_question', 'welcome_options', 'welcome_answers', 'welcome_feedback',
+                                     'welcome_feedbackresponse']
+
+        # string-list dictionary where each list is a list of different ids needed when going through respective table
+        table_needs_these_ids_dict = {
+            'welcome_course': ['course_id'], 'welcome_textbook': ['textbook_id'],
+            'welcome_test': ['test_id', 'course_id'], 'welcome_template': ['template_id', 'course_id'],
+            'welcome_coverpage': ['coverPage', 'course_id'], 'welcome_test_attachments': ['test_id'],
+            'welcome_attachment': ['attachment_id', 'course_id'], 'welcome_testquestion': ['test_id'],
+            'welcome_testsection': ['section_id'], 'welcome_testpart': ['part_id', 'test_id'],
+            'welcome_question': ['question_id', 'course_id'], 'welcome_options': ['question_id'],
+            'welcome_answers': ['question_id'], 'welcome_feedback': ['question_id', 'test_id'],
+            'welcome_feedbackresponse': ['feedback_id']
+        }
+
+        # string-list dictionary. when going through respective table, find ids in list
+        need_to_look_for_dict = {
+            'welcome_course': ['textbook_id'], 'welcome_textbook': None,
+            'welcome_test': ['template_id'], 'welcome_template': ['coverPage'],
+            'welcome_coverpage': None, 'welcome_test_attachments': ['attachment_id'],
+            'welcome_attachment': None, 'welcome_testquestion': ['question_id', 'section_id'],
+            'welcome_testsection': ['part_id'], 'welcome_testpart': None,
+            'welcome_question': None, 'welcome_options': None,
+            'welcome_answers': None, 'welcome_feedback': None,
+            'welcome_feedbackresponse': None
+        }
+
+        # this dictionary is used like a boolean value. if the table name is a key, then it is seen as true.
+        # if true, the value will get replaced with simply "id" when going through database
+        need_to_use_regular_id_dict = {
+            'welcome_course': 'course_id', 'welcome_textbook': 'textbook_id',
+            'welcome_test': 'test_id', 'welcome_template': 'template_id',
+            'welcome_coverpage': 'coverPage',
+            'welcome_attachment': 'attachment_id',
+            'welcome_testsection': 'section_id', 'welcome_testpart': 'part_id',
+            'welcome_question': 'question_id'
+        }
+
+        # this holds the current ids acquired
+        cache_of_ids_dict = {}
+
         wb = openpyxl.Workbook() # creates the Workbook container object (Excel file)
         wb.remove(wb.active)  # Remove the default blank sheet
 
@@ -168,21 +227,10 @@ def export_csv(request):
                 print('No courses given to export')
                 return JsonResponse({'error': 'No courses given to export'}, status=400)
 
-            sheet = wb.create_sheet(title="welcome_course")
-            query = "SELECT * FROM welcome_course"
+            cache_of_ids_dict['course_id'] = course_id_list
 
-            """ going to use these in a sec ...
-            table_name = 'welcome_course'
-            query = f"SELECT * FROM `{table_name}` LIMIT 100"
-            query = f"SELECT * FROM `{table_name}`"
-            """
-
-            id_dict = {}
-            id_dict['id'] = course_id_list # this makes a key-list pair entry in a dictionary
-            needed_ids_list = ["textbook_id"]
-            result_dict = fill_out_sheet(sheet, query, id_dict, needed_ids_list)
-            print(result_dict)
-
+            for table_name in course_table_names_list + test_table_names_list + question_table_names_list:
+                set_up_then_call()
 
         elif export_type == 'test':
             print(test_id_list)
@@ -206,6 +254,7 @@ def export_csv(request):
             print('Invalid export type given')
             return JsonResponse({'error': 'Invalid export type provided'}, status=400)
 
+        print(cache_of_ids_dict)
         print("Final sheets in workbook:", wb.sheetnames)
 
         # Save to a BytesIO stream instead of a file
