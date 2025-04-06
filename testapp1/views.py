@@ -357,6 +357,8 @@ def parse_qti_xml(request):
                 # the ID is used to know what the correct response is
                 correct_answer_ident = None
 
+                correct_answer_ident = None
+
                 the_question_type = qti_metadata_fields[0].text
                 max_points_for_question = float(qti_metadata_fields[1].text)
 

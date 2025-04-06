@@ -132,6 +132,16 @@ class Course(models.Model):
         return Question.objects.none()
 
 
+    def get_publisher_questions(self):
+        """
+        Returns all questions created by publishers from courses with the same textbook ISBN.
+        """
+        return Question.objects.filter(
+            course__textbook_isbn=self.textbook_isbn,
+            owner__userprofile__role='publisher'
+        )
+
+
 """
 QUESTION MODEL
 Stores various types of questions with support for multiple formats:
@@ -408,6 +418,7 @@ class Attachment(models.Model):
 
     def __str__(self):
         return self.file.name
+
 
 
 """
