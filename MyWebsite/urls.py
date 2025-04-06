@@ -20,6 +20,8 @@ from testapp1 import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('hello/', views.hello_world),  # This will map the "hello_world" view to the URL "/hello/"
     path('testing/', views.parse_qti_xml), # Make sure not to forget the up-slash at the end of url (for now)
+    path('process_file/', views.parse_qti_xml, name='parse_qti_xml'), # Process file (AJAX)
+    path("upload/", views.upload_page, name="upload_page"),  # Load the HTML page
+    path("export-csv/", views.export_csv, name="export_csv"),
 ]
