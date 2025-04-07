@@ -103,6 +103,7 @@ def export_csv(request):
         return dict_to_return
 
     def set_up_then_call():
+        print(table_name)
         sheet = wb.create_sheet(title=f"{table_name}")
         query = f"SELECT * FROM `{table_name}`"  # this uses BACKTICKS to dynamically query the database
 
@@ -113,15 +114,26 @@ def export_csv(request):
                 id_dict[id] = cache_of_ids_dict.get(id)  # creates a key-list pair
         id_dict = copy.deepcopy(id_dict)
         if table_name in need_to_use_regular_id_dict:
-            if need_to_use_regular_id_dict.get(table_name) in id_dict: # avoid accessing key-value that doesnt exist
+            if need_to_use_regular_id_dict.get(table_name) in id_dict: # avoid accessing key-value that doesn't exist
                 id_dict['id'] = id_dict.pop(need_to_use_regular_id_dict.get(table_name))  # removes pair after getting value
         # id_dict['id'] = course_id_list  # this makes a key-list pair entry in a dictionary
         need_to_grab_ids_list = need_to_look_for_dict.get(table_name)  # gets list of ids to scrape from database
+
+        # this if-block makes sure that we scrape the IDs if the records were not identified by ID
+        if table_name in using_implied_id_dict and cache_of_ids_dict.get(using_implied_id_dict.get(table_name)) is None:
+            if need_to_grab_ids_list is not None:
+                need_to_grab_ids_list.append('id')
+            else:
+                need_to_grab_ids_list = ['id']
+
         result_dict = fill_out_sheet(sheet, query, id_dict, need_to_grab_ids_list)
         print(result_dict)
         if result_dict is not None:
+            result_dict = copy.deepcopy(result_dict) # make a copy of dict to avoid overwriting anything
+            if 'id' in result_dict:
+                result_dict[using_implied_id_dict.get(table_name)] = result_dict.pop('id') # ex: replaces id with feedback_id
             for id_name, value in result_dict.items():
-                if id_name not in cache_of_ids_dict:
+                if id_name not in cache_of_ids_dict and value: # check if already have id list. also check if result value is not empty
                     cache_of_ids_dict[id_name] = value
         print('') # just used to space things out for debugging
 
@@ -214,11 +226,57 @@ def export_csv(request):
         # this holds the current ids acquired
         cache_of_ids_dict = {}
 
+        # test_attachments, attachment,
+        using_implied_id_dict = {
+            'welcome_test': 'test_id', 'welcome_question': 'question_id', 'welcome_feedback': 'feedback_id'
+        }
+
         wb = openpyxl.Workbook() # creates the Workbook container object (Excel file)
         wb.remove(wb.active)  # Remove the default blank sheet
 
-        if export_type == 'entire':
+        list_of_valid_export_types = ['course', 'test', 'question', 'all courses', 'everything']
+
+        if export_type not in list_of_valid_export_types:
+            return JsonResponse({'error': 'Invalid export type'}, status=400)
+
+        if export_type == 'all courses':
             print(export_type) # placeholder
+
+            query = f"SELECT * FROM welcome_course"
+            cursor = connection.cursor()
+            cursor.execute(query)  # cursor holds result from cursor.execute() query
+            rows = cursor.fetchall()
+            course_id_list = []
+            for row in rows:
+                if row[0] is not None:
+                    course_id_list.append(row[0])
+            if not course_id_list:
+                print('No courses found')
+                return JsonResponse({'not available': 'No courses found to export'}, status=400)
+            export_type = 'course'
+
+        if export_type == 'everything':
+            entire_database_table_name_list = connection.introspection.table_names()
+            print(entire_database_table_name_list)
+            for table_name in entire_database_table_name_list:
+
+                print(table_name) # for debugging
+                if len(table_name) > 31:
+                    sheet = wb.create_sheet(title=f"{table_name[:31]}")
+                else:
+                    sheet = wb.create_sheet(title=f"{table_name}")
+                query = f"SELECT * FROM `{table_name}`"  # this uses BACKTICKS to dynamically query the database
+                cursor = connection.cursor()
+                cursor.execute(query)  # cursor holds result from cursor.execute() query
+                rows = cursor.fetchall()
+                column_name_list = [column_info[0] for column_info in cursor.description]
+                for cell_column, column_name in enumerate(column_name_list, 1):
+                    cell_column_letter = get_column_letter(cell_column)  # get_column_letter maps number to letter
+                    sheet[f'{cell_column_letter}1'] = column_name
+                for row, whole_row in enumerate(rows, 2):
+                    for column, field_value in enumerate(whole_row, 1):
+                        column_letter = get_column_letter(column) # columns are letters in Excel
+                        sheet[f"{column_letter}{row}"] = field_value
 
         elif export_type == 'course':
             print(course_id_list)
@@ -235,24 +293,26 @@ def export_csv(request):
         elif export_type == 'test':
             print(test_id_list)
 
-            if test_id_list:
-                print('') # placeholder
-            else:
+            if not test_id_list:
                 print('No tests given to export')
                 return JsonResponse({'error': 'No tests given to export'}, status=400)
 
-        elif export_type == 'questions':
+            cache_of_ids_dict['test_id'] = test_id_list
+
+            for table_name in test_table_names_list + question_table_names_list:
+                set_up_then_call()
+
+        elif export_type == 'question':
             print(question_id_list)
 
-            if question_id_list:
-                print('') # placeholder
-            else:
+            if not question_id_list:
                 print('No questions given to export')
                 return JsonResponse({'error': 'No questions given to export'}, status=400)
 
-        else:
-            print('Invalid export type given')
-            return JsonResponse({'error': 'Invalid export type provided'}, status=400)
+            cache_of_ids_dict['question_id'] = question_id_list
+
+            for table_name in question_table_names_list:
+                set_up_then_call()
 
         print(cache_of_ids_dict)
         print("Final sheets in workbook:", wb.sheetnames)
@@ -260,7 +320,7 @@ def export_csv(request):
         # Save to a BytesIO stream instead of a file
         from io import BytesIO
         output = BytesIO()
-        wb.save(output)
+        wb.save(output) # this will CRASH the program if there are no Excel sheets in the workbook
         output.seek(0)
 
         # Prepare the response
@@ -270,9 +330,11 @@ def export_csv(request):
         )
         response['Content-Disposition'] = 'attachment; filename=exported_data.xlsx'
 
-    print("did it get here???") # used for debugging
+        print("did it get here???")  # used for debugging
 
-    return response
+        return response
+
+    return JsonResponse({'error': 'request.method was not POST'}, status=400)
 
 #
 

@@ -36,12 +36,17 @@
             .catch(error => console.error("Error:", error));
         }
 
+        // function to export parts of database or entire database
+        // cannot do multiple export types
+        // valid export types are: 'course', 'test', 'question', 'all courses', 'everything'
+        // 'everything' is meant ONLY for WEBMASTER
+        //relies on a list of ids being sent. only 1 list of ids should be sent
         function ajaxExportCsv() {
             // these are lists of IDs for each (1st column in database)
             const course = ["2", 1];
-            const test = ["1"];
+            const test = ["5"];
             const questions = ["1", "2"];
-            const typeOfExport = ["course"];
+            const typeOfExport = ["question"];
 
             // console.log("got here");
 
@@ -65,7 +70,7 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = "your_file.xlsx";  // Name of the downloaded file
+                    a.download = "database_export.xlsx";  // Name of the downloaded file
                     document.body.appendChild(a);
                     a.click();  // Trigger the download
                     a.remove();  // Clean up the DOM
