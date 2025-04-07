@@ -475,6 +475,9 @@ def parse_qti_xml(request):
                 # MultiChoice & TF might be able to be combined. For now, they are separate
                 if the_question_type == 'multiple_choice_question':
                     #
+
+                    the_question_type = 'mc'
+
                     node = node.find('.//response_lid')
                     answer_choices_dict = {}
                     for response_label_elem in node.findall('.//response_label'):
@@ -556,6 +559,8 @@ def parse_qti_xml(request):
                                 options_instance.save()  # save/update entry in database
 
                 elif the_question_type == 'true_false_question':
+                    the_question_type = 'tf'
+
                     node = node.find('.//response_lid')
                     answer_choices_dict = {}
                     for response_label_elem in node.findall('.//response_label'):
@@ -611,6 +616,8 @@ def parse_qti_xml(request):
 
                     the_question_type = "fill_in_the_blank"
 
+                    the_question_type = 'fb'
+
                     question_instance = create_question(
                         the_course, the_question_type, question_text_field,
                         max_points_for_question
@@ -657,7 +664,7 @@ def parse_qti_xml(request):
 
                 elif the_question_type == 'multiple_answers_question':
 
-                    the_question_type = "multiple_selection"
+                    the_question_type = 'ms'
 
                     correct_answer_ident_list = []
                     node = node.find('.//response_lid')
@@ -745,6 +752,9 @@ def parse_qti_xml(request):
 
                 elif the_question_type == 'matching_question':  # this is explicitly stated in rubric to support
                     # Canvas requires you to add at least one answer
+
+                    the_question_type = 'ma'
+
                     answer_choices_dict = {}  # right side options and their ID's
                     left_side_dict = {}
 
@@ -828,6 +838,8 @@ def parse_qti_xml(request):
 
                 elif the_question_type == 'essay_question':
                     # mostly done but may need to process feedbacks or comments
+
+                    the_question_type = 'es'
 
                     # this creates a question record in database
                     question_instance = create_question(the_course, the_question_type, question_text_field,
