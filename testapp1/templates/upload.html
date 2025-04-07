@@ -40,13 +40,13 @@
         // cannot do multiple export types
         // valid export types are: 'course', 'test', 'question', 'all courses', 'everything'
         // 'everything' is meant ONLY for WEBMASTER
-        //relies on a list of ids being sent. only 1 list of ids should be sent
+        // relies on a list of ids being sent. only 1 list of ids should be sent
         function ajaxExportCsv() {
             // these are lists of IDs for each (1st column in database)
             const course = ["2", 1];
             const test = ["5"];
             const questions = ["1", "2"];
-            const typeOfExport = ["question"];
+            const typeOfExport = ["course"];
 
             // console.log("got here");
 
